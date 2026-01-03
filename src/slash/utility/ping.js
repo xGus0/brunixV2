@@ -49,8 +49,18 @@ export default {
                         lavalinkInfo.status = '🟢 Online';
 
                         // Tentar pegar ping de múltiplas fontes
-                        const nodePing = node.ping || node.stats?.ping || node.rest?.ping;
-                        lavalinkInfo.ping = nodePing && nodePing > 0 ? `${Math.round(nodePing)}ms` : 'Conectado';
+                        let nodePing = node.ping || node.stats?.ping || node.rest?.ping;
+
+                        // socket.ping é uma função, não um valor
+                        if (!nodePing && typeof node.socket?.ping === 'function') {
+                            try {
+                                nodePing = node.socket.ping();
+                            } catch (e) {
+                                // Ignore se falhar
+                            }
+                        }
+
+                        lavalinkInfo.ping = nodePing && nodePing > 0 ? `${Math.round(nodePing)}ms` : 'N/A';
 
                         // Uptime do node
                         if (node.stats?.uptime) {
