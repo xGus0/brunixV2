@@ -66,13 +66,22 @@ export default {
 
             // Top 25 results (Discord limit)
             const choices = result.tracks.slice(0, 25).map(track => {
-                const title = truncate(track.info.title, 45);
-                const artist = truncate(track.info.author, 25);
+                const title = track.info.title;
+                const artist = track.info.author;
                 const duration = formatDuration(track.info.duration);
 
+                // Construir o valor (max 100 caracteres)
+                const fullValue = `${artist} - ${title}`;
+                const value = truncate(fullValue, 100);
+
+                // Construir o nome (max 100 caracteres para display)
+                const displayTitle = truncate(title, 40);
+                const displayArtist = truncate(artist, 25);
+                const name = `${displayTitle} - ${displayArtist} (${duration})`;
+
                 return {
-                    name: `${title} - ${artist} (${duration})`,
-                    value: `${track.info.author} - ${track.info.title}` // Exact search
+                    name: truncate(name, 100), // Discord limit
+                    value: value // Discord limit
                 };
             });
 
