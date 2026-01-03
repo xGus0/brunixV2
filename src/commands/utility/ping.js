@@ -1,5 +1,5 @@
 // ╔═══════════════════════════════════════════════════════════════════╗
-// ║                       Ping Command                                  ║
+// ║                       Ping Command - DEBUG VERSION                  ║
 // ║              Latency Monitor with Real-time Updates                 ║
 // ╚═══════════════════════════════════════════════════════════════════╝
 
@@ -19,12 +19,16 @@ export default {
     async sendPingEmbed(client, message, existingMessage = null) {
         // Calculate Bot Ping (Roundtrip) - sempre calcular
         const start = Date.now();
-        const tempMsg = existingMessage ? null : await message.channel.send({ content: '🏓 Calculando...' });
+        const tempMsg = existingMessage ? null : await message.channel.send({ content: '🏓' });
         const end = Date.now();
         const botLatency = end - start;
 
         // Calculate API Ping (WebSocket) - garantir valor válido
         const apiLatency = client.ws.ping > 0 ? Math.round(client.ws.ping) : 'N/A';
+
+        console.log('═══════════════════════════════════════');
+        console.log('[PING DEBUG] Bot Latency:', botLatency);
+        console.log('[PING DEBUG] API Latency:', apiLatency, '(from client.ws.ping:', client.ws.ping, ')');
 
         // Calculate Lavalink Ping
         let lavalinkInfo = {
@@ -37,26 +41,42 @@ export default {
         try {
             if (client.lavalink && client.lavalink.nodeManager) {
                 const nodes = Array.from(client.lavalink.nodeManager.nodes.values());
+                console.log('[PING DEBUG] Number of nodes:', nodes.length);
 
                 if (nodes.length > 0) {
-                    const node = nodes[0]; // Pega o primeiro node
+                    const node = nodes[0];
+                    console.log('[PING DEBUG] Node connected:', node.connected);
+                    console.log('[PING DEBUG] Node properties:', Object.keys(node));
 
                     if (node.connected) {
                         lavalinkInfo.status = '🟢 Online';
 
                         // Tentar pegar ping de múltiplas fontes
-                        let nodePing = node.ping || node.stats?.ping || node.rest?.ping;
+                        console.log('[PING DEBUG] node.ping:', node.ping);
+                        console.log('[PING DEBUG] node.stats?.ping:', node.stats?.ping);
+                        console.log('[PING DEBUG] node.rest?.ping:', node.rest?.ping);
+                        console.log('[PING DEBUG] typeof node.socket?.ping:', typeof node.socket?.ping);
 
-                        // socket.ping é uma função, não um valor
+                        let nodePing = node.ping || node.stats?.ping || node.rest?.ping;
+                        console.log('[PING DEBUG] nodePing after direct properties:', nodePing);
+
+                        // socket.ping é uma função
                         if (!nodePing && typeof node.socket?.ping === 'function') {
+                            console.log('[PING DEBUG] Calling node.socket.ping()...');
                             try {
                                 nodePing = node.socket.ping();
+                                console.log('[PING DEBUG] Result from socket.ping():', nodePing);
+                                console.log('[PING DEBUG] Type of result:', typeof nodePing);
                             } catch (e) {
-                                // Ignore se falhar
+                                console.log('[PING DEBUG] ERROR calling socket.ping():', e);
                             }
                         }
 
+                        console.log('[PING DEBUG] FINAL nodePing value:', nodePing);
+                        console.log('[PING DEBUG] nodePing > 0?', nodePing > 0);
+
                         lavalinkInfo.ping = nodePing && nodePing > 0 ? `${Math.round(nodePing)}ms` : 'N/A';
+                        console.log('[PING DEBUG] FINAL lavalinkInfo.ping:', lavalinkInfo.ping);
 
                         // Uptime do node
                         if (node.stats?.uptime) {
@@ -76,6 +96,8 @@ export default {
         } catch (error) {
             console.error('[PING] Error fetching Lavalink info:', error);
         }
+
+        console.log('═══════════════════════════════════════');
 
         const embed = new EmbedBuilder()
             .setColor(COLORS.EMBED_SUCCESS)
