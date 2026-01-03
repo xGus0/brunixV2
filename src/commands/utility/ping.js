@@ -44,8 +44,17 @@ export default {
                     if (node.connected) {
                         lavalinkInfo.status = '🟢 Online';
 
+                        // DEBUG: Log node properties
+                        console.log('[PING DEBUG] Node properties:', {
+                            ping: node.ping,
+                            'stats.ping': node.stats?.ping,
+                            'rest.ping': node.rest?.ping,
+                            'socket.ping': node.socket?.ping,
+                            allStats: node.stats
+                        });
+
                         // Tentar pegar ping de múltiplas fontes
-                        const nodePing = node.ping || node.stats?.ping || node.rest?.ping;
+                        const nodePing = node.ping || node.stats?.ping || node.rest?.ping || node.socket?.ping;
                         lavalinkInfo.ping = nodePing && nodePing > 0 ? `${Math.round(nodePing)}ms` : 'Conectado';
 
                         // Uptime do node
