@@ -1,131 +1,137 @@
 // ╔═══════════════════════════════════════════════════════════════════╗
-// ║                      profile Command                                ║
-// ║                Premium Profile without Loading                      ║
+// ║                    !profile Command                                  ║
+// ║                   Perfil do Usuário Brunix                          ║
 // ╚═══════════════════════════════════════════════════════════════════╝
 
-import { AttachmentBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js';
-import { formatNumber } from '../../utils/formatters.js';
-import { EMOJIS, COLORS } from '../../config/constants.js';
-import ProfileCard from '../../canvas/templates/ProfileCard.js';
+import { EmbedBuilder, AttachmentBuilder } from 'discord.js';
+import { COLORS } from '../../config/constants.js';
 import UserRepository from '../../database/repositories/UserRepository.js';
 import FavoriteRepository from '../../database/repositories/FavoriteRepository.js';
 import PlaylistRepository from '../../database/repositories/PlaylistRepository.js';
-import HistoryRepository from '../../database/repositories/HistoryRepository.js';
-import ArtistRepository from '../../database/repositories/ArtistRepository.js';
-import Logger from '../../utils/logger.js';
+import ProfileCard from '../../canvas/templates/ProfileCard.js';
 
 export default {
     name: 'profile',
-    aliases: ['perfil', 'me', 'stats'],
-    description: 'Visualiza o perfil de música de um usuário',
-    usage: '[@usuário]',
+    aliases: ['perfil', 'me'],
+    description: 'Mostra o perfil do usuário',
     category: 'user',
-    cooldown: 5,
+    usage: '!profile [@usuário]',
 
     async execute(client, message, args) {
+        // Get target user (mentioned or author)
         const targetUser = message.mentions.users.first() || message.author;
 
-        const generateProfilePayload = async () => {
+        try {
+            // Initialize repositories
             const userRepo = new UserRepository(client.db);
             const favoriteRepo = new FavoriteRepository(client.db);
             const playlistRepo = new PlaylistRepository(client.db);
-            const historyRepo = new HistoryRepository(client.db);
-            const artistRepo = new ArtistRepository(client.db);
 
-            // Get all data in parallel
-            const [profile, stats, favoriteCount, playlistCount, topArtistData, recents] = await Promise.all([
-                userRepo.getOrCreate(targetUser),
-                userRepo.getStats(targetUser.id),
-                favoriteRepo.count(targetUser.id),
-                playlistRepo.countUserPlaylists(targetUser.id),
-                historyRepo.getTopArtist(targetUser.id),
-                historyRepo.getRecents(targetUser.id, 4)
-            ]);
+            // Get user data - pass Discord user object
+            const userData = await userRepo.getOrCreate(targetUser);
 
-            // Get Artist Image if Top Artist exists
-            let artistImg = null;
-            if (topArtistData) {
-                const artistInfo = await artistRepo.getByName(topArtistData.name);
-                artistImg = artistInfo?.image_url || null;
+            // Get favorites count
+            let favoriteCount = 0;
+            try {
+                const favorites = await favoriteRepo.getAll(targetUser.id);
+                favoriteCount = Array.isArray(favorites) ? favorites.length : 0;
+            } catch { }
+
+            // Get playlists count
+            let playlistCount = 0;
+            try {
+                const playlists = await playlistRepo.getUserPlaylists(targetUser.id);
+                playlistCount = Array.isArray(playlists) ? playlists.length : 0;
+            } catch { }
+
+            // Try to generate profile card
+            try {
+                const cardBuffer = await ProfileCard.generate({
+                    username: targetUser.username,
+                    avatar: targetUser.displayAvatarURL({ extension: 'png', size: 256 }),
+                    totalSongs: userData?.total_played || 0,
+                    totalTime: userData?.total_time_listened || 0,
+                    favoriteCount: favoriteCount,
+                    playlistCount: playlistCount,
+                    isPremium: false
+                });
+
+                const attachment = new AttachmentBuilder(cardBuffer, { name: 'profile.png' });
+                const embed = new EmbedBuilder()
+                    .setColor(COLORS.EMBED_DEFAULT)
+                    .setImage('attachment://profile.png');
+
+                await message.reply({ embeds: [embed], files: [attachment] });
+
+            } catch (cardError) {
+                // Fallback to embed if canvas fails
+                console.error('ProfileCard error:', cardError);
+                await sendFallbackEmbed(client, message, targetUser, userData, favoriteCount, playlistCount);
             }
 
-            // Generate canvas
-            const canvas = await ProfileCard.generate({
-                user: targetUser,
-                stats: {
-                    totalPlayed: stats?.total_played || 0,
-                    totalTime: stats?.total_time_listened || 0,
-                    rank: stats?.rank || 0,
-                    favorites: favoriteCount,
-                    playlists: playlistCount,
-                    topArtist: topArtistData ? topArtistData.name : 'Vários Artistas',
-                    topArtistImg: artistImg,
-                    recentCovers: recents.map(r => r.thumbnail).filter(t => t)
-                }
-            });
-
-            return new AttachmentBuilder(canvas, { name: 'profile.png' });
-        };
-
-        try {
-            const attachment = await generateProfilePayload();
-
-            const row = new ActionRowBuilder()
-                .addComponents(
-                    new ButtonBuilder()
-                        .setCustomId('profile_like')
-                        .setLabel('Curtir')
-                        .setEmoji('❤️')
-                        .setStyle(ButtonStyle.Secondary),
-                    new ButtonBuilder()
-                        .setCustomId('profile_refresh')
-                        .setLabel('Atualizar')
-                        .setEmoji('🔄')
-                        .setStyle(ButtonStyle.Secondary)
-                );
-
-            const response = await message.reply({
-                content: `> **Perfil de ${targetUser.username}**`, // Minimal content header
-                files: [attachment],
-                components: [row]
-            });
-
-            // Create Collector
-            const collector = response.createMessageComponentCollector({
-                time: 60000 // 1 minute active
-            });
-
-            collector.on('collect', async (i) => {
-                if (i.user.id !== message.author.id) {
-                    return i.reply({ content: '❌ Apenas quem chamou o comando pode interagir.', ephemeral: true });
-                }
-
-                if (i.customId === 'profile_like') {
-                    await i.reply({ content: `❤️ **Você curtiu o perfil de ${targetUser.username}!**`, ephemeral: true });
-                    // Here we could add logic to increment a "likes" counter in DB
-                }
-
-                if (i.customId === 'profile_refresh') {
-                    await i.deferUpdate();
-                    try {
-                        const newAttachment = await generateProfilePayload();
-                        await i.editReply({ files: [newAttachment] });
-                    } catch (e) {
-                        // Ignore errors on refresh
-                    }
-                }
-            });
-
-            collector.on('end', () => {
-                // Disable buttons on timeout
-                const disabledRow = ActionRowBuilder.from(row);
-                disabledRow.components.forEach(c => c.setDisabled(true));
-                response.edit({ components: [disabledRow] }).catch(() => { });
-            });
-
         } catch (error) {
-            Logger.error('Profile command error:', error);
-            await message.reply({ content: '❌ Erro ao gerar perfil.' });
+            console.error('Profile error:', error);
+            await sendFallbackEmbed(client, message, targetUser, null, 0, 0);
         }
     }
 };
+
+/**
+ * Send fallback embed when canvas fails
+ */
+async function sendFallbackEmbed(client, message, targetUser, userData, favoriteCount, playlistCount) {
+    const totalSongs = userData?.total_played || 0;
+    const totalTime = userData?.total_time_listened || 0;
+
+    // Format listening time
+    const hours = Math.floor(totalTime / 3600000);
+    const minutes = Math.floor((totalTime % 3600000) / 60000);
+    const timeFormatted = hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
+
+    const embed = new EmbedBuilder()
+        .setColor(COLORS.EMBED_DEFAULT)
+        .setAuthor({
+            name: `Perfil de ${targetUser.username}`,
+            iconURL: targetUser.displayAvatarURL()
+        })
+        .setThumbnail(targetUser.displayAvatarURL({ size: 256 }))
+        .addFields(
+            {
+                name: '🎵 Músicas Tocadas',
+                value: `\`${totalSongs.toLocaleString()}\``,
+                inline: true
+            },
+            {
+                name: '⏱️ Tempo de Escuta',
+                value: `\`${timeFormatted}\``,
+                inline: true
+            },
+            {
+                name: '\u200b',
+                value: '\u200b',
+                inline: true
+            },
+            {
+                name: '💖 Favoritos',
+                value: `\`${favoriteCount}\``,
+                inline: true
+            },
+            {
+                name: '📋 Playlists',
+                value: `\`${playlistCount}\``,
+                inline: true
+            },
+            {
+                name: '\u200b',
+                value: '\u200b',
+                inline: true
+            }
+        )
+        .setFooter({
+            text: 'Continue usando o Brunix para acumular estatísticas!',
+            iconURL: client.user.displayAvatarURL()
+        })
+        .setTimestamp();
+
+    await message.reply({ embeds: [embed] });
+}
