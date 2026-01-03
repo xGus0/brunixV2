@@ -1,0 +1,252 @@
+{
+    "commands": {
+        "play": {
+            "description": "🎵 Plays a song or adds it to the queue",
+            "options": {
+                "query": "Song name or URL"
+            },
+            "responses": {
+                "added_to_queue": "Added to queue: **{title}** [{duration}]",
+                "playlist_added": "Added **{count}** songs from playlist **{name}** to the queue!",
+                "no_results": "No results found for your search.",
+                "starting": "Starting playback..."
+            }
+        },
+        "search": {
+            "description": "🔍 Searches for songs and displays results",
+            "options": {
+                "query": "Song name to search"
+            },
+            "responses": {
+                "no_results": "No results found.",
+                "select_placeholder": "Select a song..."
+            }
+        },
+        "pause": {
+            "description": "⏸️ Pauses the current song",
+            "responses": {
+                "paused": "Song paused!",
+                "already_paused": "The song is already paused!"
+            }
+        },
+        "resume": {
+            "description": "▶️ Resumes the paused song",
+            "responses": {
+                "resumed": "Playback resumed!",
+                "not_paused": "The song is not paused!"
+            }
+        },
+        "skip": {
+            "description": "⏭️ Skips to the next song",
+            "responses": {
+                "skipped": "Skipping **{title}**",
+                "next": "Next: **{title}**",
+                "no_next": "No more songs in the queue."
+            }
+        },
+        "stop": {
+            "description": "⏹️ Stops the music and disconnects",
+            "responses": {
+                "stopped": "Playback stopped and bot disconnected!"
+            }
+        },
+        "queue": {
+            "description": "📋 Shows the music queue",
+            "responses": {
+                "empty": "No songs in the queue!",
+                "title": "Music Queue"
+            }
+        },
+        "volume": {
+            "description": "🔊 Adjusts the volume",
+            "options": {
+                "level": "Volume level (0-100)"
+            },
+            "responses": {
+                "changed": "Volume changed from **{previous}%** to **{current}%**"
+            }
+        },
+        "loop": {
+            "description": "🔁 Sets the repeat mode",
+            "options": {
+                "mode": "Repeat mode"
+            },
+            "modes": {
+                "none": "Disabled",
+                "track": "Current Song",
+                "queue": "Full Queue"
+            },
+            "responses": {
+                "none": "Repeat mode disabled!",
+                "track": "Repeating current song!",
+                "queue": "Repeating entire queue!"
+            }
+        },
+        "nowplaying": {
+            "description": "🎶 Shows the currently playing song",
+            "responses": {
+                "title": "Now Playing",
+                "no_music": "No music is currently playing."
+            }
+        },
+        "shuffle": {
+            "description": "🔀 Shuffles the music queue",
+            "responses": {
+                "shuffled": "Queue shuffled successfully!",
+                "empty": "The queue is empty!"
+            }
+        },
+        "lyrics": {
+            "description": "📝 Shows the lyrics of the current song",
+            "options": {
+                "query": "Song name (optional)"
+            },
+            "responses": {
+                "fetching": "Fetching lyrics...",
+                "not_found": "Lyrics not found for this song.",
+                "no_music": "No music is playing. Use: `!lyrics <song>`"
+            }
+        },
+        "radio": {
+            "description": "📻 Starts 24/7 radio mode with music genre",
+            "options": {
+                "genre": "Music genre (pop, rock, jazz...)"
+            },
+            "responses": {
+                "starting": "Starting {genre} radio...",
+                "stopped": "Radio stopped.",
+                "genre_changed": "Genre changed to: **{genre}**"
+            }
+        },
+        "favorite": {
+            "description": "💖 Manages your favorite songs",
+            "options": {
+                "action": "Action (add, remove, list)"
+            },
+            "responses": {
+                "added": "Song added to favorites!",
+                "removed": "Song removed from favorites.",
+                "empty": "You don't have any favorite songs yet.",
+                "list_title": "Your Favorite Songs"
+            }
+        },
+        "playlist": {
+            "description": "📁 Manages your custom playlists",
+            "options": {
+                "action": "Action (create, delete, add, remove, list, play)"
+            },
+            "responses": {
+                "created": "Playlist **{name}** created!",
+                "deleted": "Playlist **{name}** deleted.",
+                "empty": "You don't have any playlists.",
+                "added": "Song added to playlist **{name}**!",
+                "removed": "Song removed from playlist **{name}**.",
+                "playing": "Playing playlist **{name}**..."
+            }
+        },
+        "profile": {
+            "description": "👤 Shows user profile",
+            "options": {
+                "user": "User (optional)"
+            },
+            "responses": {
+                "title": "{username}'s Profile",
+                "stats": "Statistics",
+                "total_songs": "Total Songs",
+                "total_time": "Total Time",
+                "favorites": "Favorites",
+                "playlists": "Playlists"
+            }
+        },
+        "ping": {
+            "description": "🏓 Shows bot latency",
+            "responses": {
+                "pong": "🏓 Pong! Latency: **{latency}ms**",
+                "api_latency": "API: **{api}ms**"
+            }
+        },
+        "help": {
+            "description": "📚 Shows all available commands",
+            "options": {
+                "command": "Command name (optional)"
+            },
+            "responses": {
+                "title": "Help Center",
+                "categories": "Categories",
+                "usage": "Usage",
+                "aliases": "Aliases",
+                "cooldown": "Cooldown",
+                "category_music": "Music",
+                "category_user": "User",
+                "category_utility": "Utilities",
+                "command_not_found": "Command not found."
+            }
+        },
+        "botinfo": {
+            "description": "ℹ️ Information about the bot",
+            "responses": {
+                "title": "Bot Information",
+                "version": "Version",
+                "uptime": "Uptime",
+                "servers": "Servers",
+                "users": "Users",
+                "commands": "Commands",
+                "memory": "Memory",
+                "library": "Library"
+            }
+        },
+        "settings": {
+            "description": "⚙️ Server configuration panel",
+            "responses": {
+                "no_permission": "You need **Manage Server** permission.",
+                "saved": "Settings saved!"
+            }
+        }
+    },
+    "errors": {
+        "no_voice_channel": "You need to be in a voice channel!",
+        "no_permission_connect": "I don't have permission to connect to this channel!",
+        "no_permission_speak": "I don't have permission to speak in this channel!",
+        "channel_full": "The voice channel is full!",
+        "not_same_channel": "You need to be in the same voice channel as me!",
+        "no_player": "No music is playing!",
+        "generic_error": "An error occurred while processing your request.",
+        "invalid_query": "Invalid query.",
+        "command_cooldown": "Wait {time} seconds before using this command again."
+    },
+    "common": {
+        "loading": "Loading...",
+        "success": "Success!",
+        "error": "Error!",
+        "warning": "Warning!",
+        "requested_by": "Requested by {user}",
+        "page": "Page {current}/{total}",
+        "songs": "songs",
+        "duration": "Duration",
+        "position": "Position",
+        "artist": "Artist",
+        "album": "Album"
+    },
+    "settings": {
+        "title": "Settings",
+        "description": "Manage bot behavior in this server.",
+        "prefix": "Prefix",
+        "language": "Language",
+        "dj_role": "DJ Role",
+        "music_channels": "Music Channels",
+        "none": "None",
+        "all": "All",
+        "edit_prefix": "Change Prefix",
+        "edit_language": "Change Language",
+        "edit_dj": "Set DJ Role",
+        "edit_channels": "Restrict Channels",
+        "reset": "Reset All",
+        "select_language": "Select desired language:",
+        "language_changed": "Language changed to **{language}**!",
+        "prefix_prompt": "Type the new prefix in chat (Max 5 characters):",
+        "prefix_changed": "Prefix changed to `{prefix}`!",
+        "prefix_invalid": "Invalid prefix! Use maximum 5 characters without spaces.",
+        "dj_prompt": "Mention the DJ role or type the ID (or 'disable' to remove):",
+        "reset_confirm": "Settings reset to default!"
+    }
+}

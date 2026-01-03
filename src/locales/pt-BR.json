@@ -1,0 +1,252 @@
+{
+    "commands": {
+        "play": {
+            "description": "🎵 Toca uma música ou adiciona à fila",
+            "options": {
+                "query": "Nome da música ou URL"
+            },
+            "responses": {
+                "added_to_queue": "Adicionada à fila: **{title}** [{duration}]",
+                "playlist_added": "Adicionadas **{count}** músicas da playlist **{name}** à fila!",
+                "no_results": "Nenhum resultado encontrado para sua busca.",
+                "starting": "Iniciando reprodução..."
+            }
+        },
+        "search": {
+            "description": "🔍 Busca músicas e exibe resultados",
+            "options": {
+                "query": "Nome da música para buscar"
+            },
+            "responses": {
+                "no_results": "Nenhum resultado encontrado.",
+                "select_placeholder": "Selecione uma música..."
+            }
+        },
+        "pause": {
+            "description": "⏸️ Pausa a música atual",
+            "responses": {
+                "paused": "Música pausada!",
+                "already_paused": "A música já está pausada!"
+            }
+        },
+        "resume": {
+            "description": "▶️ Retoma a música pausada",
+            "responses": {
+                "resumed": "Reprodução retomada!",
+                "not_paused": "A música não está pausada!"
+            }
+        },
+        "skip": {
+            "description": "⏭️ Pula para a próxima música",
+            "responses": {
+                "skipped": "Pulando **{title}**",
+                "next": "Próxima: **{title}**",
+                "no_next": "Não há mais músicas na fila."
+            }
+        },
+        "stop": {
+            "description": "⏹️ Para a música e desconecta",
+            "responses": {
+                "stopped": "Reprodução finalizada e bot desconectado!"
+            }
+        },
+        "queue": {
+            "description": "📋 Mostra a fila de músicas",
+            "responses": {
+                "empty": "Não há músicas na fila!",
+                "title": "Fila de Músicas"
+            }
+        },
+        "volume": {
+            "description": "🔊 Ajusta o volume",
+            "options": {
+                "level": "Nível do volume (0-100)"
+            },
+            "responses": {
+                "changed": "Volume alterado de **{previous}%** para **{current}%**"
+            }
+        },
+        "loop": {
+            "description": "🔁 Configura o modo de repetição",
+            "options": {
+                "mode": "Modo de repetição"
+            },
+            "modes": {
+                "none": "Desativado",
+                "track": "Música Atual",
+                "queue": "Fila Completa"
+            },
+            "responses": {
+                "none": "Repetição desativada!",
+                "track": "Repetindo a música atual!",
+                "queue": "Repetindo toda a fila!"
+            }
+        },
+        "nowplaying": {
+            "description": "🎶 Mostra a música que está tocando",
+            "responses": {
+                "title": "Tocando Agora",
+                "no_music": "Nenhuma música está tocando no momento."
+            }
+        },
+        "shuffle": {
+            "description": "🔀 Embaralha a fila de músicas",
+            "responses": {
+                "shuffled": "Fila embaralhada com sucesso!",
+                "empty": "A fila está vazia!"
+            }
+        },
+        "lyrics": {
+            "description": "📝 Mostra a letra da música atual",
+            "options": {
+                "query": "Nome da música (opcional)"
+            },
+            "responses": {
+                "fetching": "Buscando letra...",
+                "not_found": "Letra não encontrada para esta música.",
+                "no_music": "Nenhuma música está tocando. Use: `!lyrics <música>`"
+            }
+        },
+        "radio": {
+            "description": "📻 Inicia modo rádio 24/7 com gênero musical",
+            "options": {
+                "genre": "Gênero musical (pop, rock, jazz...)"
+            },
+            "responses": {
+                "starting": "Iniciando rádio {genre}...",
+                "stopped": "Rádio desligado.",
+                "genre_changed": "Gênero alterado para: **{genre}**"
+            }
+        },
+        "favorite": {
+            "description": "💖 Gerencia suas músicas favoritas",
+            "options": {
+                "action": "Ação (add, remove, list)"
+            },
+            "responses": {
+                "added": "Música adicionada aos favoritos!",
+                "removed": "Música removida dos favoritos.",
+                "empty": "Você não tem músicas favoritas ainda.",
+                "list_title": "Suas Músicas Favoritas"
+            }
+        },
+        "playlist": {
+            "description": "📁 Gerencia suas playlists personalizadas",
+            "options": {
+                "action": "Ação (create, delete, add, remove, list, play)"
+            },
+            "responses": {
+                "created": "Playlist **{name}** criada!",
+                "deleted": "Playlist **{name}** deletada.",
+                "empty": "Você não tem playlists.",
+                "added": "Música adicionada à playlist **{name}**!",
+                "removed": "Música removida da playlist **{name}**.",
+                "playing": "Tocando playlist **{name}**..."
+            }
+        },
+        "profile": {
+            "description": "👤 Mostra o perfil de usuário",
+            "options": {
+                "user": "Usuário (opcional)"
+            },
+            "responses": {
+                "title": "Perfil de {username}",
+                "stats": "Estatísticas",
+                "total_songs": "Total de Músicas",
+                "total_time": "Tempo Total",
+                "favorites": "Favoritos",
+                "playlists": "Playlists"
+            }
+        },
+        "ping": {
+            "description": "🏓 Mostra a latência do bot",
+            "responses": {
+                "pong": "🏓 Pong! Latência: **{latency}ms**",
+                "api_latency": "API: **{api}ms**"
+            }
+        },
+        "help": {
+            "description": "📚 Mostra todos os comandos disponíveis",
+            "options": {
+                "command": "Nome do comando (opcional)"
+            },
+            "responses": {
+                "title": "Central de Ajuda",
+                "categories": "Categorias",
+                "usage": "Uso",
+                "aliases": "Atalhos",
+                "cooldown": "Tempo de espera",
+                "category_music": "Música",
+                "category_user": "Usuário",
+                "category_utility": "Utilidades",
+                "command_not_found": "Comando não encontrado."
+            }
+        },
+        "botinfo": {
+            "description": "ℹ️ Informações sobre o bot",
+            "responses": {
+                "title": "Informações do Bot",
+                "version": "Versão",
+                "uptime": "Tempo Online",
+                "servers": "Servidores",
+                "users": "Usuários",
+                "commands": "Comandos",
+                "memory": "Memória",
+                "library": "Biblioteca"
+            }
+        },
+        "settings": {
+            "description": "⚙️ Painel de configuração do servidor",
+            "responses": {
+                "no_permission": "Você precisa de permissão **Gerenciar Servidor**.",
+                "saved": "Configurações salvas!"
+            }
+        }
+    },
+    "errors": {
+        "no_voice_channel": "Você precisa estar em um canal de voz!",
+        "no_permission_connect": "Não tenho permissão para conectar neste canal!",
+        "no_permission_speak": "Não tenho permissão para falar neste canal!",
+        "channel_full": "O canal de voz está cheio!",
+        "not_same_channel": "Você precisa estar no mesmo canal de voz que eu!",
+        "no_player": "Não há nenhuma música tocando!",
+        "generic_error": "Ocorreu um erro ao processar sua solicitação.",
+        "invalid_query": "Consulta inválida.",
+        "command_cooldown": "Aguarde {time} segundos antes de usar este comando novamente."
+    },
+    "common": {
+        "loading": "Carregando...",
+        "success": "Sucesso!",
+        "error": "Erro!",
+        "warning": "Atenção!",
+        "requested_by": "Solicitado por {user}",
+        "page": "Página {current}/{total}",
+        "songs": "músicas",
+        "duration": "Duração",
+        "position": "Posição",
+        "artist": "Artista",
+        "album": "Álbum"
+    },
+    "settings": {
+        "title": "Configurações",
+        "description": "Gerencie o comportamento do bot neste servidor.",
+        "prefix": "Prefixo",
+        "language": "Idioma",
+        "dj_role": "Cargo DJ",
+        "music_channels": "Canais de Música",
+        "none": "Nenhum",
+        "all": "Todos",
+        "edit_prefix": "Alterar Prefixo",
+        "edit_language": "Alterar Idioma",
+        "edit_dj": "Definir Cargo DJ",
+        "edit_channels": "Restringir Canais",
+        "reset": "Resetar Tudo",
+        "select_language": "Selecione o idioma desejado:",
+        "language_changed": "Idioma alterado para **{language}**!",
+        "prefix_prompt": "Digite o novo prefixo no chat (Max 5 caracteres):",
+        "prefix_changed": "Prefixo alterado para `{prefix}`!",
+        "prefix_invalid": "Prefixo inválido! Use no máximo 5 caracteres sem espaços.",
+        "dj_prompt": "Mencione o cargo de DJ ou digite o ID (ou 'disable' para remover):",
+        "reset_confirm": "Configurações resetadas para o padrão!"
+    }
+}

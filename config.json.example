@@ -1,0 +1,17 @@
+{
+  "DISCORD_TOKEN": "your_discord_bot_token_here",
+  "DISCORD_CLIENT_ID": "your_discord_client_id_here",
+  "SUPABASE_KEY": "your_supabase_anon_key_here",
+  "SUPABASE_URL": "https://your-project.supabase.co",
+  "DEV_ID": "your_developer_discord_id_here",
+  "MUSIC_API_PASSWORD": "your_music_api_password_here",
+  "DEEPL_API_KEY": "your_deepl_api_key_here",
+  "LAVALINK_HOST": "your_lavalink_host_here",
+  "LAVALINK_PORT": 2333,
+  "LAVALINK_PASSWORD": "your_lavalink_password_here",
+  "LAVALINK_SECURE": false,
+  "SPOTIFY_CLIENT_ID": "your_spotify_client_id_here",
+  "SPOTIFY_CLIENT_SECRET": "your_spotify_client_secret_here",
+  "LASTFM_API_KEY": "your_lastfm_api_key_here",
+  "LASTFM_API_SECRET": "your_lastfm_api_secret_here"
+}

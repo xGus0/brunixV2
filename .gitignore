@@ -1,0 +1,79 @@
+# ========================================
+# ARQUIVOS DE CONFIGURAÇÃO SENSÍVEIS
+# ========================================
+config.json
+.env
+.env.*
+!.env.example
+
+# ========================================
+# NODE.JS & NPM
+# ========================================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# ========================================
+# LAVALINK
+# ========================================
+application.yaml
+application.yml
+lavalink.log
+logs/
+
+# ========================================
+# BANCO DE DADOS
+# ========================================
+*.db
+*.sqlite
+*.sqlite3
+database.json
+data/
+
+# ========================================
+# ARQUIVOS TEMPORÁRIOS
+# ========================================
+*.log
+*.tmp
+*.temp
+*.cache
+.cache/
+temp/
+tmp/
+
+# ========================================
+# IDE & EDITOR
+# ========================================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# ========================================
+# SISTEMA OPERACIONAL
+# ========================================
+Thumbs.db
+desktop.ini
+
+# ========================================
+# BUILD & DIST
+# ========================================
+dist/
+build/
+out/
+
+# ========================================
+# OUTROS ARQUIVOS SENSÍVEIS
+# ========================================
+*.pem
+*.key
+*.cert
+credentials.json
+secrets.json
+tokens.json
