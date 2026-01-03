@@ -17,14 +17,14 @@ export default {
     },
 
     async sendPingEmbed(client, message, existingMessage = null) {
-        // Calculate Bot Ping (Roundtrip)
+        // Calculate Bot Ping (Roundtrip) - sempre calcular
         const start = Date.now();
         const tempMsg = existingMessage ? null : await message.channel.send({ content: '🏓 Calculando...' });
         const end = Date.now();
-        const botLatency = existingMessage ? 'Atualizando...' : (end - start);
+        const botLatency = end - start;
 
-        // Calculate API Ping (WebSocket)
-        const apiLatency = Math.round(client.ws.ping);
+        // Calculate API Ping (WebSocket) - garantir valor válido
+        const apiLatency = client.ws.ping > 0 ? Math.round(client.ws.ping) : 'N/A';
 
         // Calculate Lavalink Ping
         let lavalinkInfo = {
@@ -43,7 +43,10 @@ export default {
 
                     if (node.connected) {
                         lavalinkInfo.status = '🟢 Online';
-                        lavalinkInfo.ping = node.ping ? `${Math.round(node.ping)}ms` : 'N/A';
+
+                        // Tentar pegar ping de múltiplas fontes
+                        const nodePing = node.ping || node.stats?.ping || node.rest?.ping;
+                        lavalinkInfo.ping = nodePing && nodePing > 0 ? `${Math.round(nodePing)}ms` : 'Conectado';
 
                         // Uptime do node
                         if (node.stats?.uptime) {
@@ -71,12 +74,12 @@ export default {
             .addFields(
                 {
                     name: '🤖 Bot Latency',
-                    value: `\`${botLatency === 'Atualizando...' ? botLatency : botLatency + 'ms'}\`\n*Tempo de resposta do bot*`,
+                    value: `\`${botLatency}ms\`\n*Tempo de resposta do bot*`,
                     inline: true
                 },
                 {
                     name: '🌐 API Latency',
-                    value: `\`${apiLatency}ms\`\n*WebSocket do Discord*`,
+                    value: `\`${typeof apiLatency === 'number' ? apiLatency + 'ms' : apiLatency}\`\n*WebSocket do Discord*`,
                     inline: true
                 },
                 {
