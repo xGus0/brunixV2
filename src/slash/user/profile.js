@@ -1,5 +1,6 @@
 // ╔═══════════════════════════════════════════════════════════════════╗
 // ║                    /profile Slash Command                           ║
+// ║                   Perfil do Usuário Brunix                          ║
 // ╚═══════════════════════════════════════════════════════════════════╝
 
 import { SlashCommandBuilder, EmbedBuilder, AttachmentBuilder } from 'discord.js';
@@ -12,10 +13,10 @@ import ProfileCard from '../../canvas/templates/ProfileCard.js';
 export default {
     data: new SlashCommandBuilder()
         .setName('profile')
-        .setDescription('[USER] 👤 Shows user profile')
+        .setDescription('[USER] 👤 Mostra o perfil do usuário')
         .addUserOption(option =>
             option.setName('user')
-                .setDescription('User to view profile (default: you)')
+                .setDescription('Usuário para ver perfil (padrão: você)')
                 .setRequired(false)
         ),
 
@@ -25,45 +26,116 @@ export default {
         const targetUser = interaction.options.getUser('user') || interaction.user;
 
         try {
+            // Initialize repositories
             const userRepo = new UserRepository(interaction.client.db);
             const favoriteRepo = new FavoriteRepository(interaction.client.db);
             const playlistRepo = new PlaylistRepository(interaction.client.db);
 
-            const userData = await userRepo.getOrCreate(targetUser.id, targetUser.username);
-            const favorites = await favoriteRepo.getAll(targetUser.id);
-            const playlists = await playlistRepo.getUserPlaylists(targetUser.id);
+            // Get user data - pass Discord user object, not separate params
+            const userData = await userRepo.getOrCreate(targetUser);
 
-            // Generate profile card
-            const cardBuffer = await ProfileCard.generate({
-                username: targetUser.username,
-                avatar: targetUser.displayAvatarURL({ extension: 'png', size: 256 }),
-                totalSongs: userData.total_songs_played || 0,
-                totalTime: userData.total_listening_time || 0,
-                favoriteCount: favorites.length,
-                playlistCount: playlists.length,
-                isPremium: false
-            });
+            // Get favorites count
+            let favoriteCount = 0;
+            try {
+                const favorites = await favoriteRepo.getAll(targetUser.id);
+                favoriteCount = Array.isArray(favorites) ? favorites.length : 0;
+            } catch { }
 
-            const attachment = new AttachmentBuilder(cardBuffer, { name: 'profile.png' });
-            const embed = new EmbedBuilder()
-                .setColor(COLORS.EMBED_DEFAULT)
-                .setImage('attachment://profile.png');
+            // Get playlists count
+            let playlistCount = 0;
+            try {
+                const playlists = await playlistRepo.getUserPlaylists(targetUser.id);
+                playlistCount = Array.isArray(playlists) ? playlists.length : 0;
+            } catch { }
 
-            await interaction.editReply({ embeds: [embed], files: [attachment] });
+            // Try to generate profile card
+            try {
+                const cardBuffer = await ProfileCard.generate({
+                    username: targetUser.username,
+                    avatar: targetUser.displayAvatarURL({ extension: 'png', size: 256 }),
+                    totalSongs: userData?.total_played || 0,
+                    totalTime: userData?.total_time_listened || 0,
+                    favoriteCount: favoriteCount,
+                    playlistCount: playlistCount,
+                    isPremium: false
+                });
+
+                const attachment = new AttachmentBuilder(cardBuffer, { name: 'profile.png' });
+                const embed = new EmbedBuilder()
+                    .setColor(COLORS.EMBED_DEFAULT)
+                    .setImage('attachment://profile.png');
+
+                await interaction.editReply({ embeds: [embed], files: [attachment] });
+
+            } catch (cardError) {
+                // Fallback to embed if canvas fails
+                console.error('ProfileCard error:', cardError);
+                await sendFallbackEmbed(interaction, targetUser, userData, favoriteCount, playlistCount);
+            }
 
         } catch (error) {
             console.error('Profile error:', error);
-
-            const embed = new EmbedBuilder()
-                .setColor(COLORS.EMBED_DEFAULT)
-                .setAuthor({ name: `👤 Perfil de ${targetUser.username}`, iconURL: targetUser.displayAvatarURL() })
-                .setThumbnail(targetUser.displayAvatarURL({ size: 256 }))
-                .addFields(
-                    { name: '📊 Estatísticas', value: 'Em breve...', inline: false }
-                )
-                .setFooter({ text: 'Use o bot para acumular estatísticas!' });
-
-            await interaction.editReply({ embeds: [embed] });
+            await sendFallbackEmbed(interaction, targetUser, null, 0, 0);
         }
     }
 };
+
+/**
+ * Send fallback embed when canvas fails
+ */
+async function sendFallbackEmbed(interaction, targetUser, userData, favoriteCount, playlistCount) {
+    const totalSongs = userData?.total_played || 0;
+    const totalTime = userData?.total_time_listened || 0;
+
+    // Format listening time
+    const hours = Math.floor(totalTime / 3600000);
+    const minutes = Math.floor((totalTime % 3600000) / 60000);
+    const timeFormatted = hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
+
+    const embed = new EmbedBuilder()
+        .setColor(COLORS.EMBED_DEFAULT)
+        .setAuthor({
+            name: `Perfil de ${targetUser.username}`,
+            iconURL: targetUser.displayAvatarURL()
+        })
+        .setThumbnail(targetUser.displayAvatarURL({ size: 256 }))
+        .addFields(
+            {
+                name: '🎵 Músicas Tocadas',
+                value: `\`${totalSongs.toLocaleString()}\``,
+                inline: true
+            },
+            {
+                name: '⏱️ Tempo de Escuta',
+                value: `\`${timeFormatted}\``,
+                inline: true
+            },
+            {
+                name: '\u200b',
+                value: '\u200b',
+                inline: true
+            },
+            {
+                name: '💖 Favoritos',
+                value: `\`${favoriteCount}\``,
+                inline: true
+            },
+            {
+                name: '📋 Playlists',
+                value: `\`${playlistCount}\``,
+                inline: true
+            },
+            {
+                name: '\u200b',
+                value: '\u200b',
+                inline: true
+            }
+        )
+        .setFooter({
+            text: 'Continue usando o Brunix para acumular estatísticas!',
+            iconURL: interaction.client.user.displayAvatarURL()
+        })
+        .setTimestamp();
+
+    await interaction.editReply({ embeds: [embed] });
+}
