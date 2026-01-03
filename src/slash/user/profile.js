@@ -30,7 +30,7 @@ export default {
             const playlistRepo = new PlaylistRepository(interaction.client.db);
 
             const userData = await userRepo.getOrCreate(targetUser.id, targetUser.username);
-            const favorites = await favoriteRepo.getUserFavorites(targetUser.id);
+            const favorites = await favoriteRepo.getAll(targetUser.id);
             const playlists = await playlistRepo.getUserPlaylists(targetUser.id);
 
             // Generate profile card
