@@ -1,7 +1,9 @@
 # ========================================
 # ARQUIVOS DE CONFIGURAÇÃO SENSÍVEIS
 # ========================================
-config.json
+# ATENÇÃO: Arquivos descomentados para deploy em host
+# CERTIFIQUE-SE que o repositório é PRIVADO!
+# config.json  # Descomentado para enviar ao GitHub
 .env
 .env.*
 !.env.example
@@ -20,8 +22,8 @@ pnpm-lock.yaml
 # ========================================
 # LAVALINK
 # ========================================
-application.yaml
-application.yml
+# application.yaml  # Descomentado para deploy
+# application.yml   # Descomentado para deploy
 lavalink.log
 logs/
 
