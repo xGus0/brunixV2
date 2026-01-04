@@ -77,9 +77,20 @@
                 "queue": "Full Queue"
             },
             "responses": {
-                "none": "Repeat mode disabled!",
-                "track": "Repeating current song!",
-                "queue": "Repeating entire queue!"
+                "none": "Repeat disabled!",
+                "track": "Repeating current track!",
+                "queue": "Repeating entire queue!",
+                "embed": {
+                    "title": "Repeat Mode",
+                    "description": "Choose the repeat mode:",
+                    "off_name": "❌ Off",
+                    "off_value": "Plays the queue normally without repeating",
+                    "track_name": "🔂 Current Track",
+                    "track_value": "Repeats the current track only",
+                    "queue_name": "🔁 Queue",
+                    "queue_value": "Repeats the entire queue from start",
+                    "current_mode": "Current Mode: {mode}"
+                }
             }
         },
         "nowplaying": {
@@ -155,14 +166,38 @@
                 "total_songs": "Total Songs",
                 "total_time": "Total Time",
                 "favorites": "Favorites",
-                "playlists": "Playlists"
+                "playlists": "Playlists",
+                "card": {
+                    "songs_listened": "SONGS LISTENED",
+                    "recent": "RECENT 🔁",
+                    "top_artist": "TOP ARTIST",
+                    "hours_listened": "hours listened",
+                    "various_artists": "Various Artists",
+                    "music_lover": "Music Lover",
+                    "verified": "Verified",
+                    "level": "LVL"
+                }
             }
         },
         "ping": {
             "description": "🏓 Shows bot latency",
             "responses": {
                 "pong": "🏓 Pong! Latency: **{latency}ms**",
-                "api_latency": "API: **{api}ms**"
+                "api_latency": "API: **{api}ms**",
+                "embed": {
+                    "title": "📊 System Latency",
+                    "description": "Real-time service monitoring",
+                    "bot_label": "Bot Latency",
+                    "bot_desc": "Bot response time",
+                    "api_label": "API Latency",
+                    "api_desc": "Discord WebSocket",
+                    "lavalink_status": "Lavalink Status",
+                    "lavalink_ping": "Lavalink Ping",
+                    "uptime": "Uptime",
+                    "active_players": "Active Players",
+                    "footer": "Click 🔄 to refresh • Updates every 60s",
+                    "refresh": "Refresh"
+                }
             }
         },
         "help": {

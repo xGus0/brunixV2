@@ -1,11 +1,12 @@
 // ╔═══════════════════════════════════════════════════════════════════╗
 // ║                    /loop Slash Command                              ║
-// ║                  Interactive Button Controls                         ║
+// ║                  Interactive Button Controls (i18n)                 ║
 // ╚═══════════════════════════════════════════════════════════════════╝
 
 import { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js';
 import { COLORS } from '../../config/constants.js';
 import Embed from '../../utils/embed.js';
+import i18n from '../../utils/i18n.js';
 
 export default {
     data: new SlashCommandBuilder()
@@ -14,10 +15,21 @@ export default {
 
     async execute(interaction) {
         const player = interaction.client.lavalink.players.get(interaction.guild.id);
+        const lang = await getGuildLanguage(interaction.client, interaction.guild.id);
+        const t = (key, args) => i18n.t(lang, `commands.loop.responses.${key}`, args);
+        // Helper to get mode name from locale
+        const getModeName = (mode) => {
+            const map = {
+                off: t('embed.off_name'),
+                track: t('embed.track_name'),
+                queue: t('embed.queue_name')
+            };
+            return map[mode] || t('embed.off_name');
+        };
 
         if (!player) {
             return interaction.reply({
-                embeds: [Embed.error('No music is currently playing!')],
+                embeds: [Embed.error(i18n.t(lang, 'errors.no_player'))],
                 flags: 64 // Ephemeral
             });
         }
@@ -26,42 +38,42 @@ export default {
 
         const embed = new EmbedBuilder()
             .setColor(COLORS.EMBED_INFO)
-            .setAuthor({ name: '🔁 Repeat Mode', iconURL: interaction.client.user.displayAvatarURL() })
-            .setDescription('Choose the repeat mode:')
+            .setAuthor({ name: t('embed.title'), iconURL: interaction.client.user.displayAvatarURL() })
+            .setDescription(t('embed.description'))
             .addFields(
                 {
-                    name: '❌ Off',
-                    value: 'Plays the queue normally without repeating',
+                    name: t('embed.off_name'),
+                    value: t('embed.off_value'),
                     inline: true
                 },
                 {
-                    name: '🔂 Current Track',
-                    value: 'Repeats the current track only',
+                    name: t('embed.track_name'),
+                    value: t('embed.track_value'),
                     inline: true
                 },
                 {
-                    name: '🔁 Queue',
-                    value: 'Repeats the entire queue from start',
+                    name: t('embed.queue_name'),
+                    value: t('embed.queue_value'),
                     inline: true
                 }
             )
-            .setFooter({ text: `Current Mode: ${getModeText(currentMode)}` })
+            .setFooter({ text: t('embed.current_mode', { mode: getModeName(currentMode) }) })
             .setTimestamp();
 
         const row = new ActionRowBuilder().addComponents(
             new ButtonBuilder()
                 .setCustomId('loop_off')
-                .setLabel('Off')
+                .setLabel(t('modes.none') || 'Off')
                 .setEmoji('❌')
                 .setStyle(currentMode === 'off' ? ButtonStyle.Success : ButtonStyle.Secondary),
             new ButtonBuilder()
                 .setCustomId('loop_track')
-                .setLabel('Track')
+                .setLabel(t('modes.track') || 'Track')
                 .setEmoji('🔂')
                 .setStyle(currentMode === 'track' ? ButtonStyle.Success : ButtonStyle.Secondary),
             new ButtonBuilder()
                 .setCustomId('loop_queue')
-                .setLabel('Queue')
+                .setLabel(t('modes.queue') || 'Queue')
                 .setEmoji('🔁')
                 .setStyle(currentMode === 'queue' ? ButtonStyle.Success : ButtonStyle.Secondary)
         );
@@ -84,29 +96,29 @@ export default {
             player.setRepeatMode(mode);
 
             const messages = {
-                off: '✅ Repeat disabled!',
-                track: '✅ Repeating current track!',
-                queue: '✅ Repeating entire queue!'
+                off: t('none'),
+                track: t('track'),
+                queue: t('queue')
             };
 
-            // Update embed
-            embed.setFooter({ text: `Current Mode: ${getModeText(mode)}` });
+            // Update embed with new language state (though language doesn't change mid-interaction usually)
+            embed.setFooter({ text: t('embed.current_mode', { mode: getModeName(mode) }) });
 
             // Update buttons
             const updatedRow = new ActionRowBuilder().addComponents(
                 new ButtonBuilder()
                     .setCustomId('loop_off')
-                    .setLabel('Off')
+                    .setLabel(t('modes.none') || 'Off')
                     .setEmoji('❌')
                     .setStyle(mode === 'off' ? ButtonStyle.Success : ButtonStyle.Secondary),
                 new ButtonBuilder()
                     .setCustomId('loop_track')
-                    .setLabel('Track')
+                    .setLabel(t('modes.track') || 'Track')
                     .setEmoji('🔂')
                     .setStyle(mode === 'track' ? ButtonStyle.Success : ButtonStyle.Secondary),
                 new ButtonBuilder()
                     .setCustomId('loop_queue')
-                    .setLabel('Queue')
+                    .setLabel(t('modes.queue') || 'Queue')
                     .setEmoji('🔁')
                     .setStyle(mode === 'queue' ? ButtonStyle.Success : ButtonStyle.Secondary)
             );
@@ -133,11 +145,11 @@ export default {
     }
 };
 
-function getModeText(mode) {
-    const modes = {
-        off: '❌ Off',
-        track: '🔂 Current Track',
-        queue: '🔁 Queue'
-    };
-    return modes[mode] || '❌ Off';
+async function getGuildLanguage(client, guildId) {
+    try {
+        const { data } = await client.db.from('guild_configs').select('language').eq('guild_id', guildId).single();
+        return data?.language || 'pt-BR';
+    } catch {
+        return 'pt-BR';
+    }
 }

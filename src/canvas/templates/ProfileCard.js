@@ -32,8 +32,20 @@ export default class ProfileCard {
      * Generate "Soft Pop" profile card
      * @param {object} data - User profile data
      */
-    static async generate(data) {
+    static async generate(data, texts = {}) {
         const { user, stats } = data;
+
+        // Default texts/Fallbacks
+        const t = {
+            songs_listened: texts.songs_listened || 'MÚSICAS OUVIDAS',
+            recent: texts.recent || 'RECENTES 🔁',
+            top_artist: texts.top_artist || 'TOP ARTISTA',
+            hours_listened: texts.hours_listened || 'horas ouvidas',
+            various_artists: texts.various_artists || 'Vários Artistas',
+            music_lover: texts.music_lover || 'Music Lover',
+            verified: texts.verified || 'Verified',
+            level: texts.level || 'LVL'
+        };
 
         // Map input data to template structure
         const userData = {
@@ -41,7 +53,7 @@ export default class ProfileCard {
             avatar: user.displayAvatarURL({ extension: 'png', size: 256 }),
             level: this.calculateLevel(stats.totalPlayed || 0),
             totalSongs: this.formatNumber(stats.totalPlayed || 0),
-            topArtist: stats.topArtist || 'Vários Artistas',
+            topArtist: stats.topArtist || t.various_artists,
             topArtistImg: stats.topArtistImg || null, // Will use placeholder if null
             recentCovers: stats.recentCovers || [],    // Array of URLs
             hoursListened: Math.floor((stats.totalTime || 0) / (1000 * 60 * 60))
@@ -170,7 +182,7 @@ export default class ProfileCard {
         ctx.font = getFont('Bold', 12);
         ctx.textAlign = 'left';
         ctx.textBaseline = 'alphabetic';
-        ctx.fillText(`LVL ${userData.level}`, -12, 6);
+        ctx.fillText(`${t.level} ${userData.level}`, -12, 6);
         ctx.restore();
 
         // Name and Tags
@@ -201,8 +213,8 @@ export default class ProfileCard {
 
         let tagX = textStartX;
         // Move tags down to pY + 95 to avoid overlap and center block
-        tagX = drawTag('Music Lover', tagX, pY + 95, '#f3e8ff', '#7e22ce'); // Purple
-        tagX = drawTag('Verified', tagX, pY + 95, '#dcfce7', '#15803d');   // Green
+        tagX = drawTag(t.music_lover, tagX, pY + 95, '#f3e8ff', '#7e22ce'); // Purple
+        tagX = drawTag(t.verified, tagX, pY + 95, '#dcfce7', '#15803d');   // Green
         ctx.restore();
 
 
@@ -229,7 +241,7 @@ export default class ProfileCard {
 
         ctx.fillStyle = CONFIG.colors.textSoft;
         ctx.font = getFont('Bold', 14);
-        ctx.fillText('MÚSICAS OUVIDAS', tX + tW / 2, tY + 110);
+        ctx.fillText(t.songs_listened, tX + tW / 2, tY + 110);
 
         // Fake Progress Bar
         const barW = 150;
@@ -258,7 +270,7 @@ export default class ProfileCard {
         ctx.fillStyle = '#db2777'; // Strong Pink
         ctx.textAlign = 'center';
         ctx.font = getFont('Bold', 14);
-        ctx.fillText('RECENTES 🔁', rX + rW / 2, rY + 25);
+        ctx.fillText(t.recent, rX + rW / 2, rY + 25);
 
         // Cover Grid (2x2)
         const gridPad = 10;
@@ -326,7 +338,7 @@ export default class ProfileCard {
         ctx.fillStyle = CONFIG.colors.textSoft;
         ctx.textAlign = 'left';
         ctx.font = getFont('Bold', 12);
-        ctx.fillText('TOP ARTISTA', txtAreaX, aY + 60);
+        ctx.fillText(t.top_artist, txtAreaX, aY + 60);
 
         ctx.fillStyle = CONFIG.colors.textMain;
         // REDUCED FONT SIZE from 40px to 32px to fit larger names
@@ -336,7 +348,7 @@ export default class ProfileCard {
 
         ctx.fillStyle = '#ca8a04'; // Dark Yellow
         ctx.font = getFont('Bold', 14);
-        ctx.fillText(`${userData.hoursListened} horas ouvidas`, txtAreaX, aY + 125);
+        ctx.fillText(`${userData.hoursListened} ${t.hours_listened}`, txtAreaX, aY + 125);
 
         // Artist Image (Giant Circle Right)
         const artSize = 140;

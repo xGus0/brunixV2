@@ -1,14 +1,16 @@
 // ╔═══════════════════════════════════════════════════════════════════╗
 // ║                    /ping Slash Command                              ║
+// ║                   System Latency (i18n)                              ║
 // ╚═══════════════════════════════════════════════════════════════════╝
 
 import { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js';
 import { COLORS } from '../../config/constants.js';
+import i18n from '../../utils/i18n.js';
 
 export default {
     data: new SlashCommandBuilder()
         .setName('ping')
-        .setDescription('[UTILITY] 🏓 Mostra a latência do bot, API e Lavalink'),
+        .setDescription('[UTILITY] 🏓 Shows bot, API and Lavalink latency'),
 
     async execute(interaction) {
         const reply = await this.sendPingEmbed(interaction);
@@ -16,11 +18,15 @@ export default {
     },
 
     async sendPingEmbed(interaction, existingMessage = null) {
+        // Get language
+        const lang = await getGuildLanguage(interaction.client, interaction.guild.id);
+        const t = (key) => i18n.t(lang, `commands.ping.responses.embed.${key}`);
+
         // Calculate Bot Ping (Roundtrip)
         const start = Date.now();
 
         if (!existingMessage) {
-            await interaction.reply({ content: '🏓 Calculando...', fetchReply: true });
+            await interaction.reply({ content: `🏓 ${i18n.t(lang, 'common.loading')}`, fetchReply: true });
         }
 
         const end = Date.now();
@@ -73,7 +79,7 @@ export default {
                         // Players ativos
                         lavalinkInfo.players = node.stats?.playingPlayers || 0;
                     } else {
-                        lavalinkInfo.status = '🟡 Conectando...';
+                        lavalinkInfo.status = '🟡 Connecting...';
                     }
                 }
             }
@@ -83,17 +89,17 @@ export default {
 
         const embed = new EmbedBuilder()
             .setColor(COLORS.EMBED_SUCCESS)
-            .setAuthor({ name: '📊 Latência do Sistema', iconURL: interaction.client.user.displayAvatarURL() })
-            .setDescription('Monitoramento em tempo real dos serviços')
+            .setAuthor({ name: t('title'), iconURL: interaction.client.user.displayAvatarURL() })
+            .setDescription(t('description'))
             .addFields(
                 {
-                    name: '🤖 Bot Latency',
-                    value: `\`${botLatency}ms\`\n*Tempo de resposta do bot*`,
+                    name: `🤖 ${t('bot_label')}`,
+                    value: `\`${botLatency}ms\`\n*${t('bot_desc')}*`,
                     inline: true
                 },
                 {
-                    name: '🌐 API Latency',
-                    value: `\`${typeof apiLatency === 'number' ? apiLatency + 'ms' : apiLatency}\`\n*WebSocket do Discord*`,
+                    name: `🌐 ${t('api_label')}`,
+                    value: `\`${typeof apiLatency === 'number' ? apiLatency + 'ms' : apiLatency}\`\n*${t('api_desc')}*`,
                     inline: true
                 },
                 {
@@ -102,33 +108,33 @@ export default {
                     inline: true
                 },
                 {
-                    name: '🎵 Lavalink Status',
+                    name: `🎵 ${t('lavalink_status')}`,
                     value: lavalinkInfo.status,
                     inline: true
                 },
                 {
-                    name: '⚡ Lavalink Ping',
+                    name: `⚡ ${t('lavalink_ping')}`,
                     value: `\`${lavalinkInfo.ping}\``,
                     inline: true
                 },
                 {
-                    name: '⏱️ Uptime',
+                    name: `⏱️ ${t('uptime')}`,
                     value: `\`${lavalinkInfo.uptime}\``,
                     inline: true
                 },
                 {
-                    name: '🎧 Players Ativos',
+                    name: `🎧 ${t('active_players')}`,
                     value: `\`${lavalinkInfo.players}\``,
                     inline: true
                 }
             )
-            .setFooter({ text: 'Clique em 🔄 para atualizar • Atualiza automaticamente a cada 60s' })
+            .setFooter({ text: t('footer') })
             .setTimestamp();
 
         const row = new ActionRowBuilder().addComponents(
             new ButtonBuilder()
                 .setCustomId('ping_refresh')
-                .setLabel('Atualizar')
+                .setLabel(t('refresh'))
                 .setEmoji('🔄')
                 .setStyle(ButtonStyle.Primary)
         );
@@ -161,3 +167,12 @@ export default {
         });
     }
 };
+
+async function getGuildLanguage(client, guildId) {
+    try {
+        const { data } = await client.db.from('guild_configs').select('language').eq('guild_id', guildId).single();
+        return data?.language || 'pt-BR';
+    } catch {
+        return 'pt-BR';
+    }
+}

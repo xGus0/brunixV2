@@ -79,7 +79,18 @@
             "responses": {
                 "none": "Repetição desativada!",
                 "track": "Repetindo a música atual!",
-                "queue": "Repetindo toda a fila!"
+                "queue": "Repetindo toda a fila!",
+                "embed": {
+                    "title": "Modo de Repetição",
+                    "description": "Escolha o modo de repetição:",
+                    "off_name": "❌ Desativado",
+                    "off_value": "Toca a fila normalmente sem repetir",
+                    "track_name": "🔂 Música Atual",
+                    "track_value": "Repete apenas a música atual",
+                    "queue_name": "🔁 Fila Completa",
+                    "queue_value": "Repete toda a fila desde o início",
+                    "current_mode": "Modo Atual: {mode}"
+                }
             }
         },
         "nowplaying": {
@@ -155,14 +166,38 @@
                 "total_songs": "Total de Músicas",
                 "total_time": "Tempo Total",
                 "favorites": "Favoritos",
-                "playlists": "Playlists"
+                "playlists": "Playlists",
+                "card": {
+                    "songs_listened": "MÚSICAS OUVIDAS",
+                    "recent": "RECENTES 🔁",
+                    "top_artist": "TOP ARTISTA",
+                    "hours_listened": "horas ouvidas",
+                    "various_artists": "Vários Artistas",
+                    "music_lover": "Music Lover",
+                    "verified": "Verificado",
+                    "level": "LVL"
+                }
             }
         },
         "ping": {
             "description": "🏓 Mostra a latência do bot",
             "responses": {
                 "pong": "🏓 Pong! Latência: **{latency}ms**",
-                "api_latency": "API: **{api}ms**"
+                "api_latency": "API: **{api}ms**",
+                "embed": {
+                    "title": "📊 Latência do Sistema",
+                    "description": "Monitoramento em tempo real dos serviços",
+                    "bot_label": "Latência do Bot",
+                    "bot_desc": "Tempo de resposta do bot",
+                    "api_label": "Latência da API",
+                    "api_desc": "WebSocket do Discord",
+                    "lavalink_status": "Status do Lavalink",
+                    "lavalink_ping": "Ping do Lavalink",
+                    "uptime": "Tempo Online",
+                    "active_players": "Players Ativos",
+                    "footer": "Clique em 🔄 para atualizar • Atualiza a cada 60s",
+                    "refresh": "Atualizar"
+                }
             }
         },
         "help": {
