@@ -17,7 +17,7 @@ export default {
 
         if (!player) {
             return interaction.reply({
-                embeds: [Embed.error('Não há nenhuma música tocando!')],
+                embeds: [Embed.error('No music is currently playing!')],
                 flags: 64 // Ephemeral
             });
         }
@@ -26,42 +26,42 @@ export default {
 
         const embed = new EmbedBuilder()
             .setColor(COLORS.EMBED_INFO)
-            .setAuthor({ name: '🔁 Modo de Repetição', iconURL: interaction.client.user.displayAvatarURL() })
-            .setDescription('Escolha o modo de repetição:')
+            .setAuthor({ name: '🔁 Repeat Mode', iconURL: interaction.client.user.displayAvatarURL() })
+            .setDescription('Choose the repeat mode:')
             .addFields(
                 {
-                    name: '❌ Desativado',
-                    value: 'Toca a fila normalmente sem repetir',
+                    name: '❌ Off',
+                    value: 'Plays the queue normally without repeating',
                     inline: true
                 },
                 {
-                    name: '🔂 Música Atual',
-                    value: 'Repete apenas a música atual',
+                    name: '🔂 Current Track',
+                    value: 'Repeats the current track only',
                     inline: true
                 },
                 {
-                    name: '🔁 Fila Completa',
-                    value: 'Repete toda a fila desde o início',
+                    name: '🔁 Queue',
+                    value: 'Repeats the entire queue from start',
                     inline: true
                 }
             )
-            .setFooter({ text: `Modo Atual: ${getModeText(currentMode)}` })
+            .setFooter({ text: `Current Mode: ${getModeText(currentMode)}` })
             .setTimestamp();
 
         const row = new ActionRowBuilder().addComponents(
             new ButtonBuilder()
                 .setCustomId('loop_off')
-                .setLabel('Desativado')
+                .setLabel('Off')
                 .setEmoji('❌')
                 .setStyle(currentMode === 'off' ? ButtonStyle.Success : ButtonStyle.Secondary),
             new ButtonBuilder()
                 .setCustomId('loop_track')
-                .setLabel('Música')
+                .setLabel('Track')
                 .setEmoji('🔂')
                 .setStyle(currentMode === 'track' ? ButtonStyle.Success : ButtonStyle.Secondary),
             new ButtonBuilder()
                 .setCustomId('loop_queue')
-                .setLabel('Fila')
+                .setLabel('Queue')
                 .setEmoji('🔁')
                 .setStyle(currentMode === 'queue' ? ButtonStyle.Success : ButtonStyle.Secondary)
         );
@@ -84,29 +84,29 @@ export default {
             player.setRepeatMode(mode);
 
             const messages = {
-                off: '✅ Repetição desativada!',
-                track: '✅ Repetindo a música atual!',
-                queue: '✅ Repetindo toda a fila!'
+                off: '✅ Repeat disabled!',
+                track: '✅ Repeating current track!',
+                queue: '✅ Repeating entire queue!'
             };
 
             // Update embed
-            embed.setFooter({ text: `Modo Atual: ${getModeText(mode)}` });
+            embed.setFooter({ text: `Current Mode: ${getModeText(mode)}` });
 
             // Update buttons
             const updatedRow = new ActionRowBuilder().addComponents(
                 new ButtonBuilder()
                     .setCustomId('loop_off')
-                    .setLabel('Desativado')
+                    .setLabel('Off')
                     .setEmoji('❌')
                     .setStyle(mode === 'off' ? ButtonStyle.Success : ButtonStyle.Secondary),
                 new ButtonBuilder()
                     .setCustomId('loop_track')
-                    .setLabel('Música')
+                    .setLabel('Track')
                     .setEmoji('🔂')
                     .setStyle(mode === 'track' ? ButtonStyle.Success : ButtonStyle.Secondary),
                 new ButtonBuilder()
                     .setCustomId('loop_queue')
-                    .setLabel('Fila')
+                    .setLabel('Queue')
                     .setEmoji('🔁')
                     .setStyle(mode === 'queue' ? ButtonStyle.Success : ButtonStyle.Secondary)
             );
@@ -135,9 +135,9 @@ export default {
 
 function getModeText(mode) {
     const modes = {
-        off: '❌ Desativado',
-        track: '🔂 Música Atual',
-        queue: '🔁 Fila Completa'
+        off: '❌ Off',
+        track: '🔂 Current Track',
+        queue: '🔁 Queue'
     };
-    return modes[mode] || '❌ Desativado';
+    return modes[mode] || '❌ Off';
 }

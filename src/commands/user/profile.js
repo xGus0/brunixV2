@@ -91,18 +91,18 @@ async function sendFallbackEmbed(client, message, targetUser, userData, favorite
     const embed = new EmbedBuilder()
         .setColor(COLORS.EMBED_DEFAULT)
         .setAuthor({
-            name: `Perfil de ${targetUser.username}`,
+            name: `${targetUser.username}'s Profile`,
             iconURL: targetUser.displayAvatarURL()
         })
         .setThumbnail(targetUser.displayAvatarURL({ size: 256 }))
         .addFields(
             {
-                name: '🎵 Músicas Tocadas',
+                name: '🎵 Songs Played',
                 value: `\`${totalSongs.toLocaleString()}\``,
                 inline: true
             },
             {
-                name: '⏱️ Tempo de Escuta',
+                name: '⏱️ Listening Time',
                 value: `\`${timeFormatted}\``,
                 inline: true
             },
@@ -112,7 +112,7 @@ async function sendFallbackEmbed(client, message, targetUser, userData, favorite
                 inline: true
             },
             {
-                name: '💖 Favoritos',
+                name: '💖 Favorites',
                 value: `\`${favoriteCount}\``,
                 inline: true
             },
@@ -128,7 +128,7 @@ async function sendFallbackEmbed(client, message, targetUser, userData, favorite
             }
         )
         .setFooter({
-            text: 'Continue usando o Brunix para acumular estatísticas!',
+            text: 'Keep using Brunix to build your stats!',
             iconURL: client.user.displayAvatarURL()
         })
         .setTimestamp();

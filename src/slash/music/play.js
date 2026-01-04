@@ -115,7 +115,7 @@ export default {
                 const recents = await historyRepo.getRecents(userId, 5);
                 if (recents.length > 0) {
                     choices.push({
-                        name: '📂 ── Tocadas Recentemente ──',
+                        name: '📂 ── Recently Played ──',
                         value: 'section_recents'
                     });
 
@@ -133,7 +133,7 @@ export default {
                 const favorites = await favoriteRepo.getAll(userId, 5);
                 if (favorites.length > 0) {
                     choices.push({
-                        name: '💖 ── Favoritos ──',
+                        name: '💖 ── Favorites ──',
                         value: 'section_favorites'
                     });
 
@@ -151,7 +151,7 @@ export default {
             // If no history or favorites, show hint
             if (choices.length === 0) {
                 choices.push({
-                    name: '🔍 Digite 2+ caracteres para buscar...',
+                    name: '🔍 Type 2+ characters to search...',
                     value: 'waiting'
                 });
             }
@@ -159,7 +159,7 @@ export default {
         } catch (error) {
             Logger.error('getRecentAndFavorites error:', error);
             choices.push({
-                name: '🔍 Digite 2+ caracteres para buscar...',
+                name: '🔍 Type 2+ characters to search...',
                 value: 'waiting'
             });
         }
@@ -176,7 +176,7 @@ export default {
         // Ignore placeholder values
         if (query === 'waiting' || query === 'section_recents' || query === 'section_favorites') {
             return interaction.reply({
-                embeds: [Embed.error('Por favor, selecione uma música ou digite uma busca.')],
+                embeds: [Embed.error('Please select a song or type a search query.')],
                 ephemeral: true
             });
         }
@@ -248,7 +248,7 @@ export default {
 
                 if (!ytResult.tracks?.length) {
                     return interaction.editReply({
-                        embeds: [Embed.error('Não foi possível encontrar o áudio desta música.')]
+                        embeds: [Embed.error('Could not find audio for this track.')]
                     });
                 }
 
