@@ -1,6 +1,6 @@
 // ╔═══════════════════════════════════════════════════════════════════╗
 // ║                    !botinfo Command                                  ║
-// ║                      Brunix Bot Information                          ║
+// ║            Brunix Bot Information (i18n Support)                     ║
 // ╚═══════════════════════════════════════════════════════════════════╝
 
 import {
@@ -13,6 +13,7 @@ import {
     PermissionFlagsBits
 } from 'discord.js';
 import { COLORS } from '../../config/constants.js';
+import i18n from '../../utils/i18n.js';
 import os from 'os';
 
 const SUPPORT_SERVER_ID = '1403182450930090125';
@@ -25,6 +26,10 @@ export default {
     category: 'utility',
 
     async execute(client, message, args) {
+        // Get guild language from config
+        const lang = await getGuildLanguage(client, message.guild.id);
+        const t = (key, replacements = {}) => i18n.t(lang, `commands.botinfo.responses.${key}`, replacements);
+
         // Calculate uptime as Discord timestamp
         const startTimestamp = Math.floor((Date.now() - client.uptime) / 1000);
 
@@ -38,34 +43,34 @@ export default {
         };
 
         // Create main embed
-        const mainEmbed = createMainEmbed(client, startTimestamp, stats);
+        const mainEmbed = createMainEmbed(client, startTimestamp, stats, t);
 
         // Create select menu
         const selectMenu = new StringSelectMenuBuilder()
             .setCustomId('botinfo_menu')
-            .setPlaceholder('📚 Select a category')
+            .setPlaceholder(`📚 ${t('select_category')}`)
             .addOptions([
                 {
-                    label: 'Overview',
-                    description: 'General bot information',
+                    label: t('overview'),
+                    description: t('general_info'),
                     value: 'overview',
                     emoji: '🏠'
                 },
                 {
-                    label: 'Statistics',
-                    description: 'Numbers and metrics',
+                    label: t('statistics'),
+                    description: t('numbers_metrics'),
                     value: 'stats',
                     emoji: '📊'
                 },
                 {
-                    label: 'System',
-                    description: 'Technical information',
+                    label: t('system'),
+                    description: t('technical_info'),
                     value: 'system',
                     emoji: '⚙️'
                 },
                 {
-                    label: 'Credits',
-                    description: 'Development team',
+                    label: t('credits'),
+                    description: t('dev_team'),
                     value: 'credits',
                     emoji: '👥'
                 }
@@ -104,12 +109,12 @@ export default {
 
         const buttonRow = new ActionRowBuilder().addComponents(
             new ButtonBuilder()
-                .setLabel('Add Bot')
+                .setLabel(t('add_bot'))
                 .setStyle(ButtonStyle.Link)
                 .setURL(inviteUrl)
                 .setEmoji('🤖'),
             new ButtonBuilder()
-                .setLabel('Support Server')
+                .setLabel(t('support_server'))
                 .setStyle(ButtonStyle.Link)
                 .setURL(supportInvite)
                 .setEmoji('💬')
@@ -127,23 +132,27 @@ export default {
         });
 
         collector.on('collect', async (i) => {
+            // Get updated language in case it changed
+            const currentLang = await getGuildLanguage(client, message.guild.id);
+            const tCurrent = (key, replacements = {}) => i18n.t(currentLang, `commands.botinfo.responses.${key}`, replacements);
+
             let embed;
 
             switch (i.values[0]) {
                 case 'overview':
-                    embed = createMainEmbed(client, startTimestamp, stats);
+                    embed = createMainEmbed(client, startTimestamp, stats, tCurrent);
                     break;
                 case 'stats':
-                    embed = createStatsEmbed(client, stats);
+                    embed = createStatsEmbed(client, stats, tCurrent);
                     break;
                 case 'system':
-                    embed = createSystemEmbed(client);
+                    embed = createSystemEmbed(client, tCurrent);
                     break;
                 case 'credits':
-                    embed = createCreditsEmbed(client);
+                    embed = createCreditsEmbed(client, tCurrent);
                     break;
                 default:
-                    embed = createMainEmbed(client, startTimestamp, stats);
+                    embed = createMainEmbed(client, startTimestamp, stats, tCurrent);
             }
 
             await i.update({ embeds: [embed] });
@@ -159,10 +168,22 @@ export default {
     }
 };
 
+/**
+ * Get guild language from database
+ */
+async function getGuildLanguage(client, guildId) {
+    try {
+        const { data } = await client.db.from('guild_configs').select('language').eq('guild_id', guildId).single();
+        return data?.language || 'pt-BR';
+    } catch {
+        return 'pt-BR';
+    }
+}
+
 // ═══════════════════════════════════════════════════════════════════════
 // 🏠 EMBED: Overview
 // ═══════════════════════════════════════════════════════════════════════
-function createMainEmbed(client, startTimestamp, stats) {
+function createMainEmbed(client, startTimestamp, stats, t) {
     return new EmbedBuilder()
         .setColor(COLORS.EMBED_DEFAULT)
         .setAuthor({
@@ -171,32 +192,32 @@ function createMainEmbed(client, startTimestamp, stats) {
         })
         .setThumbnail(client.user.displayAvatarURL({ size: 256 }))
         .setDescription(
-            `> Advanced music bot for Discord with multi-platform support.\n\n` +
-            `🎵 **Features**\n` +
-            `╰ High quality playback via Lavalink\n` +
-            `╰ Spotify, YouTube and SoundCloud support\n` +
-            `╰ Playlist and favorites system\n` +
-            `╰ Smart autoplay with recommendations`
+            `> ${t('description_text')}\n\n` +
+            `🎵 **${t('features')}**\n` +
+            `╰ ${t('feature_1')}\n` +
+            `╰ ${t('feature_2')}\n` +
+            `╰ ${t('feature_3')}\n` +
+            `╰ ${t('feature_4')}`
         )
         .addFields(
             {
-                name: '📊 Servers',
+                name: `📊 ${t('servers')}`,
                 value: `\`${stats.guilds.toLocaleString()}\``,
                 inline: true
             },
             {
-                name: '👥 Users',
+                name: `👥 ${t('users')}`,
                 value: `\`${stats.users.toLocaleString()}\``,
                 inline: true
             },
             {
-                name: '⏰ Online since',
+                name: `⏰ ${t('online_since')}`,
                 value: `<t:${startTimestamp}:R>`,
                 inline: true
             }
         )
         .setFooter({
-            text: 'Developed by AXEML',
+            text: t('developed_by'),
             iconURL: client.user.displayAvatarURL()
         })
         .setTimestamp();
@@ -205,7 +226,7 @@ function createMainEmbed(client, startTimestamp, stats) {
 // ═══════════════════════════════════════════════════════════════════════
 // 📊 EMBED: Statistics
 // ═══════════════════════════════════════════════════════════════════════
-function createStatsEmbed(client, stats) {
+function createStatsEmbed(client, stats, t) {
     let activePlayers = 0;
     try {
         if (client.lavalink?.players) {
@@ -216,43 +237,43 @@ function createStatsEmbed(client, stats) {
     return new EmbedBuilder()
         .setColor(COLORS.EMBED_DEFAULT)
         .setAuthor({
-            name: '📊 Statistics',
+            name: `📊 ${t('statistics')}`,
             iconURL: client.user.displayAvatarURL()
         })
         .addFields(
             {
-                name: '🌐 Servers',
+                name: `🌐 ${t('servers')}`,
                 value: `\`${stats.guilds.toLocaleString()}\``,
                 inline: true
             },
             {
-                name: '👥 Users',
+                name: `👥 ${t('users')}`,
                 value: `\`${stats.users.toLocaleString()}\``,
                 inline: true
             },
             {
-                name: '📝 Channels',
+                name: `📝 ${t('channels')}`,
                 value: `\`${stats.channels.toLocaleString()}\``,
                 inline: true
             },
             {
-                name: '🎵 Active Players',
+                name: `🎵 ${t('active_players')}`,
                 value: `\`${activePlayers}\``,
                 inline: true
             },
             {
-                name: '📋 Commands',
+                name: `📋 ${t('commands')}`,
                 value: `\`${stats.commands + stats.slashCommands}\``,
                 inline: true
             },
             {
-                name: '🏓 Latency',
+                name: `🏓 ${t('latency')}`,
                 value: `\`${client.ws.ping}ms\``,
                 inline: true
             }
         )
         .setFooter({
-            text: 'Developed by AXEML',
+            text: t('developed_by'),
             iconURL: client.user.displayAvatarURL()
         })
         .setTimestamp();
@@ -261,7 +282,7 @@ function createStatsEmbed(client, stats) {
 // ═══════════════════════════════════════════════════════════════════════
 // ⚙️ EMBED: System
 // ═══════════════════════════════════════════════════════════════════════
-function createSystemEmbed(client) {
+function createSystemEmbed(client, t) {
     const memUsage = process.memoryUsage();
     const memUsed = (memUsage.heapUsed / 1024 / 1024).toFixed(2);
     const memTotal = (memUsage.heapTotal / 1024 / 1024).toFixed(2);
@@ -280,12 +301,12 @@ function createSystemEmbed(client) {
     return new EmbedBuilder()
         .setColor(COLORS.EMBED_DEFAULT)
         .setAuthor({
-            name: '⚙️ System Information',
+            name: `⚙️ ${t('system_info')}`,
             iconURL: client.user.displayAvatarURL()
         })
         .addFields(
             {
-                name: '📦 Version',
+                name: `📦 ${t('version')}`,
                 value: `\`v2.0.0\``,
                 inline: true
             },
@@ -300,12 +321,12 @@ function createSystemEmbed(client) {
                 inline: true
             },
             {
-                name: '💾 Memory',
+                name: `💾 ${t('memory')}`,
                 value: `\`${memUsed}MB / ${memTotal}MB\``,
                 inline: true
             },
             {
-                name: '🖥️ Platform',
+                name: `🖥️ ${t('platform')}`,
                 value: `\`${os.platform()}\``,
                 inline: true
             },
@@ -316,7 +337,7 @@ function createSystemEmbed(client) {
             }
         )
         .setFooter({
-            text: 'Developed by AXEML',
+            text: t('developed_by'),
             iconURL: client.user.displayAvatarURL()
         })
         .setTimestamp();
@@ -325,37 +346,37 @@ function createSystemEmbed(client) {
 // ═══════════════════════════════════════════════════════════════════════
 // 👥 EMBED: Credits
 // ═══════════════════════════════════════════════════════════════════════
-function createCreditsEmbed(client) {
+function createCreditsEmbed(client, t) {
     return new EmbedBuilder()
         .setColor(COLORS.EMBED_DEFAULT)
         .setAuthor({
-            name: '👥 Credits',
+            name: `👥 ${t('credits')}`,
             iconURL: client.user.displayAvatarURL()
         })
         .setDescription(
-            `This bot was developed with dedication by the **AXEML** team.\n\n` +
-            `Thank you for using Brunix!`
+            `${t('credits_description')}\n\n` +
+            `${t('thanks')}`
         )
         .addFields(
             {
-                name: '👑 Developer',
+                name: `👑 ${t('developer')}`,
                 value: `<@${DEV_ID}> (Gus)`,
                 inline: true
             },
             {
-                name: '🏢 Team',
+                name: `🏢 ${t('team')}`,
                 value: `AXEML`,
                 inline: true
             },
             {
-                name: '📅 Created',
+                name: `📅 ${t('created')}`,
                 value: `<t:1704067200:D>`,
                 inline: true
             }
         )
         .addFields(
             {
-                name: '🛠️ Technologies',
+                name: `🛠️ ${t('technologies')}`,
                 value:
                     `\`•\` Discord.js v14\n` +
                     `\`•\` Lavalink Client\n` +
@@ -365,7 +386,7 @@ function createCreditsEmbed(client) {
             }
         )
         .setFooter({
-            text: 'Thanks for using Brunix!',
+            text: t('thanks'),
             iconURL: client.user.displayAvatarURL()
         })
         .setTimestamp();
