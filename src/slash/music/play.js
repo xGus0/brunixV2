@@ -11,6 +11,8 @@ import { COLORS } from '../../config/constants.js';
 import Logger from '../../utils/logger.js';
 import PlayCard from '../../canvas/templates/PlayCard.js';
 import Embed from '../../utils/embed.js';
+import HistoryRepository from '../../database/repositories/HistoryRepository.js';
+import FavoriteRepository from '../../database/repositories/FavoriteRepository.js';
 
 const METADATA_SOURCE = 'spsearch';  // Spotify for metadata
 const AUDIO_SOURCE = 'ytmsearch';    // YouTube Music for audio
@@ -28,23 +30,24 @@ export default {
 
     /**
      * Autocomplete - Real-time song search as user types
+     * Shows recent tracks and favorites when empty, search results when typing
      */
     async autocomplete(interaction) {
-        const focusedValue = interaction.options.getFocused();
+        const focusedValue = interaction.options.getFocused().trim();
 
         // Don't autocomplete URLs
         if (focusedValue.startsWith('http')) {
             return interaction.respond([]);
         }
 
-        // Minimum 2 characters
-        if (focusedValue.length < 2) {
-            return interaction.respond([
-                { name: '🔍 Type at least 2 characters...', value: 'waiting...' }
-            ]);
-        }
-
         try {
+            // Show recent tracks and favorites when empty or minimal input
+            if (focusedValue.length < 2) {
+                const choices = await this.getRecentAndFavorites(interaction);
+                return interaction.respond(choices);
+            }
+
+            // Search with Lavalink
             const node = interaction.client.lavalink.nodeManager.leastUsedNodes()[0];
             if (!node) {
                 return interaction.respond([
@@ -80,8 +83,8 @@ export default {
                 const name = `${displayTitle} - ${displayArtist} (${duration})`;
 
                 return {
-                    name: truncate(name, 100), // Discord limit
-                    value: value // Discord limit
+                    name: truncate(name, 100),
+                    value: value
                 };
             });
 
@@ -90,9 +93,78 @@ export default {
         } catch (error) {
             Logger.error('Autocomplete error:', error);
             return interaction.respond([
-                { name: '❌ Search error', value: focusedValue }
+                { name: '❌ Search error', value: focusedValue || 'error' }
             ]);
         }
+    },
+
+    /**
+     * Get recent tracks and favorites for autocomplete suggestions
+     */
+    async getRecentAndFavorites(interaction) {
+        const choices = [];
+        const userId = interaction.user.id;
+
+        try {
+            // Get recent tracks from history
+            if (interaction.client.db) {
+                const historyRepo = new HistoryRepository(interaction.client.db);
+                const favoriteRepo = new FavoriteRepository(interaction.client.db);
+
+                // Get recent tracks (last 5)
+                const recents = await historyRepo.getRecents(userId, 5);
+                if (recents.length > 0) {
+                    choices.push({
+                        name: '📂 ── Tocadas Recentemente ──',
+                        value: 'section_recents'
+                    });
+
+                    recents.forEach(track => {
+                        const displayName = `🕐 ${truncate(track.title, 35)} - ${truncate(track.author, 20)}`;
+                        const value = `${track.author} - ${track.title}`;
+                        choices.push({
+                            name: truncate(displayName, 100),
+                            value: truncate(value, 100)
+                        });
+                    });
+                }
+
+                // Get favorites (top 5)
+                const favorites = await favoriteRepo.getAll(userId, 5);
+                if (favorites.length > 0) {
+                    choices.push({
+                        name: '💖 ── Favoritos ──',
+                        value: 'section_favorites'
+                    });
+
+                    favorites.forEach(track => {
+                        const displayName = `❤️ ${truncate(track.title, 35)} - ${truncate(track.author, 20)}`;
+                        const value = `${track.author} - ${track.title}`;
+                        choices.push({
+                            name: truncate(displayName, 100),
+                            value: truncate(value, 100)
+                        });
+                    });
+                }
+            }
+
+            // If no history or favorites, show hint
+            if (choices.length === 0) {
+                choices.push({
+                    name: '🔍 Digite 2+ caracteres para buscar...',
+                    value: 'waiting'
+                });
+            }
+
+        } catch (error) {
+            Logger.error('getRecentAndFavorites error:', error);
+            choices.push({
+                name: '🔍 Digite 2+ caracteres para buscar...',
+                value: 'waiting'
+            });
+        }
+
+        return choices.slice(0, 25); // Discord limit
     },
 
     /**
@@ -100,6 +172,14 @@ export default {
      */
     async execute(interaction) {
         const query = interaction.options.getString('query');
+
+        // Ignore placeholder values
+        if (query === 'waiting' || query === 'section_recents' || query === 'section_favorites') {
+            return interaction.reply({
+                embeds: [Embed.error('Por favor, selecione uma música ou digite uma busca.')],
+                ephemeral: true
+            });
+        }
 
         // Voice channel validation
         const voiceCheck = checkVoiceChannel(interaction.member);
@@ -157,7 +237,7 @@ export default {
             );
 
             if (spotifyResult.tracks?.length > 0) {
-                const track = spotifyResult.tracks[0]; // Auto-select first result
+                const track = spotifyResult.tracks[0];
 
                 // Step 2: Resolve to YouTube Music
                 const ytQuery = `${track.info.author} ${track.info.title}`;
