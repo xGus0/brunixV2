@@ -13,6 +13,7 @@ import PlayCard from '../../canvas/templates/PlayCard.js';
 import Embed from '../../utils/embed.js';
 import HistoryRepository from '../../database/repositories/HistoryRepository.js';
 import FavoriteRepository from '../../database/repositories/FavoriteRepository.js';
+import { buildControls } from '../../utils/playerControls.js';
 
 const METADATA_SOURCE = 'spsearch';  // Spotify for metadata
 const AUDIO_SOURCE = 'ytmsearch';    // YouTube Music for audio
@@ -284,10 +285,41 @@ export default {
 
                 const attachment = new AttachmentBuilder(cardBuffer, { name: 'play.png' });
 
-                await interaction.editReply({ files: [attachment] });
-
                 if (!player.playing && !player.paused) {
+                    // ═══════════════════════════════════════════════════════════════
+                    // STARTING PLAYBACK IMMEDIATELY
+                    // ═══════════════════════════════════════════════════════════════
+
+                    // Cleanup previous message
+                    if (player.nowPlayingMessage) {
+                        try { await player.nowPlayingMessage.delete(); } catch { }
+                    }
+
+                    // Check favorite status
+                    let isFavorited = false;
+                    try {
+                        const favoriteRepo = new FavoriteRepository(interaction.client.db);
+                        isFavorited = await favoriteRepo.exists(interaction.user.id, ytTrack.info.uri);
+                    } catch { }
+
+                    // Build controls
+                    const components = buildControls(player, isFavorited);
+
+                    // Send message with controls
+                    const message = await interaction.editReply({
+                        files: [attachment],
+                        components: components
+                    });
+
+                    // Set player state so trackStart knows to skip sending a new message
+                    player.nowPlayingMessage = message;
+                    player.skipTrackStartMessage = true;
+                    player.currentTrackFavorited = isFavorited; // Pre-set this
+
                     await player.play();
+                } else {
+                    // Just adding to queue
+                    await interaction.editReply({ files: [attachment] });
                 }
 
             } else {

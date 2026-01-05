@@ -14,6 +14,7 @@ import ArtistRepository from '../../database/repositories/ArtistRepository.js';
 import SpotifyService from '../../services/SpotifyService.js';
 import Logger from '../../utils/logger.js';
 import { canControlPlayer } from '../../utils/musicPermission.js';
+import { buildControls } from '../../utils/playerControls.js';
 
 export default {
     name: 'trackStart',
@@ -30,19 +31,29 @@ export default {
             return;
         }
 
-        // Clear previous update interval
-        this.clearUpdateInterval(player);
-
-        // Delete previous now playing message
-        if (player.nowPlayingMessage) {
-            try {
-                await player.nowPlayingMessage.delete();
-            } catch { }
-        }
-
         // Initialize states
         if (player.autoplay === undefined) player.autoplay = false;
         if (!player.playHistory) player.playHistory = [];
+
+        // Clear previous update interval unconditionally
+        this.clearUpdateInterval(player);
+
+        // Check if play command already handled the message
+        if (player.skipTrackStartMessage) {
+            Logger.info('Skipping duplicate "Now Playing" message (handled by /play)');
+            player.skipTrackStartMessage = false;
+
+            // Still need to update states but we don't delete/send message
+            // We assume play.js set values correctly, but we need to ensure enrichement handled later?
+            // Actually, play.js sets 'nowPlayingMessage'. We should use it.
+        } else {
+            // Delete previous now playing message
+            if (player.nowPlayingMessage) {
+                try {
+                    await player.nowPlayingMessage.delete();
+                } catch { }
+            }
+        }
 
         // Get track info (lavalink-client uses track.info)
         const trackInfo = {
@@ -146,12 +157,20 @@ export default {
             });
 
             const attachment = new AttachmentBuilder(canvas, { name: 'nowplaying.png' });
-            const components = this.buildControls(player, isFavorited);
+            const components = buildControls(player, isFavorited);
 
-            const message = await channel.send({
-                files: [attachment],
-                components
-            });
+            let message;
+
+            if (player.skipTrackStartMessage) {
+                // Message already sent by play.js
+                message = player.nowPlayingMessage;
+                player.skipTrackStartMessage = false; // Reset flag
+            } else {
+                message = await channel.send({
+                    files: [attachment],
+                    components
+                });
+            }
 
             player.nowPlayingMessage = message;
             player.currentTrackFavorited = isFavorited;
@@ -248,7 +267,7 @@ export default {
                 explicit: trackInfo.explicit || false
             });
             const attachment = new AttachmentBuilder(canvas, { name: 'nowplaying.png' });
-            const components = this.buildControls(player, player.currentTrackFavorited);
+            const components = buildControls(player, player.currentTrackFavorited);
 
             await player.nowPlayingMessage.edit({
                 files: [attachment],
@@ -266,82 +285,12 @@ export default {
         }
     },
 
-    buildControls(player, isFavorited = false) {
-        const isPaused = player.paused;
-        const loopMode = player.repeatMode || 'off';
-        const isAutoplay = player.autoplay;
-        const isShuffled = player.shuffled || false;
 
-        // ═══════════════════════════════════════════════════════════════
-        // DYNAMIC BUTTON COLORS BY STATE
-        // ═══════════════════════════════════════════════════════════════
-        // Pause: Green (paused), Secondary (playing) - green indicates paused state
-        // Loop: Primary/Blue (track), Success/Green (queue), Secondary (off)
-        // Autoplay: Green (active), Secondary (inactive)
-        // Shuffle: Green (active), Secondary (inactive)
-        // Favorite: Danger (favorited), Secondary (not favorited)
-        // ═══════════════════════════════════════════════════════════════
-
-        const getLoopStyle = () => {
-            if (loopMode === 'track') return ButtonStyle.Primary;  // Azul para track
-            if (loopMode === 'queue') return ButtonStyle.Success;  // Verde para queue
-            return ButtonStyle.Secondary;                          // Cinza para off
-        };
-
-        const controlRow = new ActionRowBuilder()
-            .addComponents(
-                new ButtonBuilder()
-                    .setCustomId('player_pause')
-                    .setEmoji(isPaused ? '▶️' : '⏸️')
-                    .setStyle(isPaused ? ButtonStyle.Success : ButtonStyle.Secondary),
-                new ButtonBuilder()
-                    .setCustomId('player_skip')
-                    .setEmoji('⏭️')
-                    .setStyle(ButtonStyle.Secondary),
-                new ButtonBuilder()
-                    .setCustomId('player_stop')
-                    .setEmoji('⏹️')
-                    .setStyle(ButtonStyle.Danger),
-                new ButtonBuilder()
-                    .setCustomId('player_loop')
-                    .setEmoji(loopMode === 'track' ? '🔂' : '🔁')
-                    .setStyle(getLoopStyle()),
-                new ButtonBuilder()
-                    .setCustomId('player_autoplay')
-                    .setEmoji('📻')
-                    .setStyle(isAutoplay ? ButtonStyle.Success : ButtonStyle.Secondary)
-            );
-
-        const actionRow = new ActionRowBuilder()
-            .addComponents(
-                new ButtonBuilder()
-                    .setCustomId('player_favorite')
-                    .setEmoji(isFavorited ? '💖' : '🤍')
-                    .setStyle(isFavorited ? ButtonStyle.Danger : ButtonStyle.Secondary),
-                new ButtonBuilder()
-                    .setCustomId('player_addplaylist')
-                    .setEmoji('📁')
-                    .setStyle(ButtonStyle.Secondary),
-                new ButtonBuilder()
-                    .setCustomId('player_shuffle')
-                    .setEmoji('🔀')
-                    .setStyle(isShuffled ? ButtonStyle.Success : ButtonStyle.Secondary),
-                new ButtonBuilder()
-                    .setCustomId('player_queue')
-                    .setEmoji('📋')
-                    .setStyle(ButtonStyle.Secondary),
-                new ButtonBuilder()
-                    .setCustomId('player_lyrics')
-                    .setEmoji('📝')
-                    .setStyle(ButtonStyle.Secondary)
-            );
-        return [controlRow, actionRow];
-    },
 
     async updateButtons(player, isFavorited) {
         if (!player.nowPlayingMessage) return;
         try {
-            const components = this.buildControls(player, isFavorited);
+            const components = buildControls(player, isFavorited);
             await player.nowPlayingMessage.edit({ components });
         } catch { }
     },
