@@ -123,4 +123,4 @@ Este projeto é privado e de uso pessoal.
 
 ## 👨‍💻 Desenvolvedor
 
-Desenvolvido com 💜 por [Seu Nome]
+Desenvolvido com 💜 por Gus
