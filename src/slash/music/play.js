@@ -316,6 +316,20 @@ export default {
                     player.skipTrackStartMessage = true;
                     player.currentTrackFavorited = isFavorited; // Pre-set this
 
+                    // Set currentTrackInfo for update interval
+                    player.currentTrackInfo = {
+                        title: ytTrack.info.title,
+                        author: ytTrack.info.author,
+                        uri: ytTrack.info.uri,
+                        thumbnail: metadata.artworkUrl,
+                        length: metadata.duration,
+                        requester: interaction.user,
+                        displayTitle: metadata.title,
+                        displayAuthor: metadata.author,
+                        displayThumbnail: metadata.artworkUrl,
+                        source: 'Spotify'
+                    };
+
                     await player.play();
                 } else {
                     // Just adding to queue

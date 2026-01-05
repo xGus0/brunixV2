@@ -43,16 +43,24 @@ export default {
             Logger.info('Skipping duplicate "Now Playing" message (handled by /play)');
             player.skipTrackStartMessage = false;
 
-            // Still need to update states but we don't delete/send message
-            // We assume play.js set values correctly, but we need to ensure enrichement handled later?
-            // Actually, play.js sets 'nowPlayingMessage'. We should use it.
-        } else {
-            // Delete previous now playing message
-            if (player.nowPlayingMessage) {
-                try {
-                    await player.nowPlayingMessage.delete();
-                } catch { }
-            }
+            // Only start the update interval, everything else was handled by play.js
+            this.startUpdateInterval(player, player.currentTrackInfo || {
+                title: track.info.title,
+                author: track.info.author,
+                uri: track.info.uri,
+                thumbnail: track.info.artworkUrl,
+                length: track.info.duration,
+                requester: track.requester
+            });
+
+            return; // Exit early
+        }
+
+        // Delete previous now playing message
+        if (player.nowPlayingMessage) {
+            try {
+                await player.nowPlayingMessage.delete();
+            } catch { }
         }
 
         // Get track info (lavalink-client uses track.info)
@@ -159,18 +167,10 @@ export default {
             const attachment = new AttachmentBuilder(canvas, { name: 'nowplaying.png' });
             const components = buildControls(player, isFavorited);
 
-            let message;
-
-            if (player.skipTrackStartMessage) {
-                // Message already sent by play.js
-                message = player.nowPlayingMessage;
-                player.skipTrackStartMessage = false; // Reset flag
-            } else {
-                message = await channel.send({
-                    files: [attachment],
-                    components
-                });
-            }
+            const message = await channel.send({
+                files: [attachment],
+                components
+            });
 
             player.nowPlayingMessage = message;
             player.currentTrackFavorited = isFavorited;
