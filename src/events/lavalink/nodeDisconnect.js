@@ -23,9 +23,9 @@ export default {
 
                 const embed = new EmbedBuilder()
                     .setColor(COLORS.EMBED_INFO)
-                    .setTitle('🔄 Reconectando ao Servidor de Música')
+                    .setTitle('🔄 Reconectando ao Sistema de Áudio')
                     .setDescription(
-                        `Estamos reconectando ao servidor de música...\n\n` +
+                        `Estamos reconectando ao sistema de áudio...\n\n` +
                         `⏳ Por favor, aguarde alguns segundos.`
                     )
                     .setFooter({ text: 'A música será retomada automaticamente quando possível' })

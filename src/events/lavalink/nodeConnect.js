@@ -31,9 +31,9 @@ export default {
 
                 const embed = new EmbedBuilder()
                     .setColor(COLORS.EMBED_SUCCESS)
-                    .setTitle('✅ Servidor de Música Reconectado')
+                    .setTitle('✅ Sistema de Áudio Reconectado')
                     .setDescription(
-                        `A conexão com o servidor de música foi restabelecida!\n\n` +
+                        `A conexão com o sistema de áudio foi restabelecida!\n\n` +
                         `🎵 Você pode retomar a reprodução usando \`/play\``
                     )
                     .setFooter({ text: 'Desculpe pela interrupção' })

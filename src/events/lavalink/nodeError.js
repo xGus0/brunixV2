@@ -23,9 +23,9 @@ export default {
 
                 const embed = new EmbedBuilder()
                     .setColor(COLORS.EMBED_ERROR)
-                    .setTitle('⚠️ Erro no Servidor de Música')
+                    .setTitle('⚠️ Erro no Sistema de Áudio')
                     .setDescription(
-                        `Ocorreu um erro no servidor de música. A reprodução pode ser interrompida.\n\n` +
+                        `Ocorreu um erro no sistema de áudio. A reprodução pode ser interrompida.\n\n` +
                         `**Erro:** ${error?.message || 'Erro desconhecido'}\n\n` +
                         `Por favor, aguarde enquanto tentamos reconectar...`
                     )

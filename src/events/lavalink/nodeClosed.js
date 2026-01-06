@@ -29,9 +29,9 @@ export default {
 
                 const embed = new EmbedBuilder()
                     .setColor(COLORS.EMBED_WARNING)
-                    .setTitle('🔌 Servidor de Música Desconectado')
+                    .setTitle('🔌 Sistema de Áudio Desconectado')
                     .setDescription(
-                        `A conexão com o servidor de música foi perdida. A reprodução foi interrompida.\n\n` +
+                        `A conexão com o sistema de áudio foi perdida. A reprodução foi interrompida.\n\n` +
                         `**Motivo:** ${reason || 'Desconhecido'}\n\n` +
                         `⏳ Tentando reconectar automaticamente...`
                     )

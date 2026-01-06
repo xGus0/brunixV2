@@ -10,7 +10,7 @@ import i18n from '../../utils/i18n.js';
 export default {
     data: new SlashCommandBuilder()
         .setName('ping')
-        .setDescription('[UTILITY] 🏓 Shows bot, API and Lavalink latency'),
+        .setDescription('[UTILITY] 🏓 Shows bot, API and audio system latency'),
 
     async execute(interaction) {
         const reply = await this.sendPingEmbed(interaction);
@@ -35,8 +35,8 @@ export default {
         // Calculate API Ping (WebSocket) - garantir valor válido
         const apiLatency = interaction.client.ws.ping > 0 ? Math.round(interaction.client.ws.ping) : 'N/A';
 
-        // Calculate Lavalink Ping
-        let lavalinkInfo = {
+        // Calculate Audio System Ping
+        let audioSystemInfo = {
             status: '🔴 Offline',
             ping: 'N/A',
             uptime: 'N/A',
@@ -52,7 +52,7 @@ export default {
                     const node = nodes[0];
 
                     if (node.connected) {
-                        lavalinkInfo.status = '🟢 Online';
+                        audioSystemInfo.status = '🟢 Online';
 
                         // Calculate ping from heartbeat timestamps
                         let nodePing = null;
@@ -60,25 +60,25 @@ export default {
                             nodePing = node.heartBeatPongTimestamp - node.heartBeatPingTimestamp;
                         }
 
-                        lavalinkInfo.ping = nodePing && nodePing > 0 ? `${Math.round(nodePing)}ms` : 'N/A';
+                        audioSystemInfo.ping = nodePing && nodePing > 0 ? `${Math.round(nodePing)}ms` : 'N/A';
 
                         // Uptime do node
                         if (node.stats?.uptime) {
                             const uptimeSeconds = Math.floor(node.stats.uptime / 1000);
                             const hours = Math.floor(uptimeSeconds / 3600);
                             const minutes = Math.floor((uptimeSeconds % 3600) / 60);
-                            lavalinkInfo.uptime = `${hours}h ${minutes}m`;
+                            audioSystemInfo.uptime = `${hours}h ${minutes}m`;
                         }
 
                         // Players ativos
-                        lavalinkInfo.players = node.stats?.playingPlayers || 0;
+                        audioSystemInfo.players = node.stats?.playingPlayers || 0;
                     } else {
-                        lavalinkInfo.status = '🟡 Connecting...';
+                        audioSystemInfo.status = '🟡 Connecting...';
                     }
                 }
             }
         } catch (error) {
-            console.error('[SLASH PING] Error fetching Lavalink info:', error);
+            console.error('[SLASH PING] Error fetching audio system info:', error);
         }
 
         const embed = new EmbedBuilder()
@@ -102,23 +102,23 @@ export default {
                     inline: true
                 },
                 {
-                    name: `🎵 ${t('lavalink_status')}`,
-                    value: lavalinkInfo.status,
+                    name: `🎵 ${t('audio_status')}`,
+                    value: audioSystemInfo.status,
                     inline: true
                 },
                 {
-                    name: `⚡ ${t('lavalink_ping')}`,
-                    value: `\`${lavalinkInfo.ping}\``,
+                    name: `⚡ ${t('audio_ping')}`,
+                    value: `\`${audioSystemInfo.ping}\``,
                     inline: true
                 },
                 {
                     name: `⏱️ ${t('uptime')}`,
-                    value: `\`${lavalinkInfo.uptime}\``,
+                    value: `\`${audioSystemInfo.uptime}\``,
                     inline: true
                 },
                 {
                     name: `🎧 ${t('active_players')}`,
-                    value: `\`${lavalinkInfo.players}\``,
+                    value: `\`${audioSystemInfo.players}\``,
                     inline: true
                 }
             )

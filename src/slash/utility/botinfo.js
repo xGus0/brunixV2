@@ -291,15 +291,15 @@ function createSystemEmbed(client, t) {
     const memUsed = (memUsage.heapUsed / 1024 / 1024).toFixed(2);
     const memTotal = (memUsage.heapTotal / 1024 / 1024).toFixed(2);
 
-    // Lavalink info
-    let lavalinkStatus = '🔴 Offline';
-    let lavalinkNodes = 0;
+    // Audio System info
+    let audioSystemStatus = '🔴 Offline';
+    let audioSystemNodes = 0;
     try {
         if (client.lavalink?.nodeManager?.nodes) {
             const nodes = Array.from(client.lavalink.nodeManager.nodes.values());
-            lavalinkNodes = nodes.length;
+            audioSystemNodes = nodes.length;
             const connectedNodes = nodes.filter(n => n.connected).length;
-            lavalinkStatus = connectedNodes > 0 ? '🟢 Online' : '🔴 Offline';
+            audioSystemStatus = connectedNodes > 0 ? '🟢 Online' : '🔴 Offline';
         }
     } catch { }
 
@@ -336,8 +336,8 @@ function createSystemEmbed(client, t) {
                 inline: true
             },
             {
-                name: '🎵 Lavalink',
-                value: `${lavalinkStatus} (${lavalinkNodes} node${lavalinkNodes !== 1 ? 's' : ''})`,
+                name: '🎵 Sistema de Áudio',
+                value: `${audioSystemStatus} (${audioSystemNodes} node${audioSystemNodes !== 1 ? 's' : ''})`,
                 inline: true
             }
         )
