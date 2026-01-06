@@ -10,21 +10,48 @@ export default class HistoryRepository {
     }
 
     /**
-     * Add a track to history
+     * Add a track to history (or update if already exists)
+     * If track already exists, updates played_at to move it to top
      */
     async add(userId, track) {
         try {
-            const { error } = await this.db
+            // Check if track already exists in history
+            const { data: existing, error: checkError } = await this.db
                 .from('listening_history')
-                .insert({
-                    user_id: userId,
-                    title: track.title,
-                    author: track.author,
-                    uri: track.uri,
-                    thumbnail: track.thumbnail
-                });
+                .select('id')
+                .eq('user_id', userId)
+                .eq('uri', track.uri)
+                .single();
 
-            if (error) throw error;
+            if (checkError && checkError.code !== 'PGRST116') { // PGRST116 = no rows returned
+                throw checkError;
+            }
+
+            if (existing) {
+                // Track exists - update played_at to move to top
+                const { error: updateError } = await this.db
+                    .from('listening_history')
+                    .update({ played_at: new Date().toISOString() })
+                    .eq('id', existing.id);
+
+                if (updateError) throw updateError;
+                Logger.db(`Updated history timestamp for track: ${track.title}`);
+            } else {
+                // Track doesn't exist - insert new
+                const { error: insertError } = await this.db
+                    .from('listening_history')
+                    .insert({
+                        user_id: userId,
+                        title: track.title,
+                        author: track.author,
+                        uri: track.uri,
+                        thumbnail: track.thumbnail
+                    });
+
+                if (insertError) throw insertError;
+                Logger.db(`Added to history: ${track.title}`);
+            }
+
             return true;
         } catch (error) {
             Logger.error('HistoryRepository.add error:', error);
