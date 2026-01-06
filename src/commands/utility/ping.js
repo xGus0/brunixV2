@@ -46,7 +46,18 @@ export default {
                 if (nodes.length > 0) {
                     const node = nodes[0];
                     console.log('[PING DEBUG] Node connected:', node.connected);
-                    console.log('[PING DEBUG] Node properties:', Object.keys(node));
+                    console.log('[PING DEBUG] Node ID:', node.id);
+
+                    // Log ALL properties of the node
+                    console.log('[PING DEBUG] All node properties:', Object.keys(node));
+
+                    // Log nested objects
+                    console.log('[PING DEBUG] node.stats keys:', node.stats ? Object.keys(node.stats) : 'null');
+                    console.log('[PING DEBUG] node.rest keys:', node.rest ? Object.keys(node.rest) : 'null');
+                    console.log('[PING DEBUG] node.socket keys:', node.socket ? Object.keys(node.socket) : 'null');
+
+                    // Log full stats object
+                    console.log('[PING DEBUG] Full node.stats:', JSON.stringify(node.stats, null, 2));
 
                     if (node.connected) {
                         lavalinkInfo.status = '🟢 Online';
@@ -55,9 +66,11 @@ export default {
                         console.log('[PING DEBUG] node.ping:', node.ping);
                         console.log('[PING DEBUG] node.stats?.ping:', node.stats?.ping);
                         console.log('[PING DEBUG] node.rest?.ping:', node.rest?.ping);
-                        console.log('[PING DEBUG] typeof node.socket?.ping:', typeof node.socket?.ping);
+                        console.log('[PING DEBUG] node.socket?.ping type:', typeof node.socket?.ping);
+                        console.log('[PING DEBUG] node.socket?.latency:', node.socket?.latency);
+                        console.log('[PING DEBUG] node.socket?._ws?.ping:', node.socket?._ws?.ping);
 
-                        let nodePing = node.ping || node.stats?.ping || node.rest?.ping;
+                        let nodePing = node.ping || node.stats?.ping || node.rest?.ping || node.socket?.latency;
                         console.log('[PING DEBUG] nodePing after direct properties:', nodePing);
 
                         // socket.ping é uma função
