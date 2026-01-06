@@ -208,12 +208,15 @@ export default {
 
                 await userRepo.incrementStats(userId, 1, trackInfo.length);
 
-                await historyRepo.add(userId, {
-                    title: trackInfo.title,
-                    author: trackInfo.author,
-                    uri: trackInfo.uri,
-                    thumbnail: trackInfo.thumbnail
-                });
+                // Only add to history if NOT autoplay (only manually searched tracks)
+                if (!track.isAutoplay) {
+                    await historyRepo.add(userId, {
+                        title: trackInfo.title,
+                        author: trackInfo.author,
+                        uri: trackInfo.uri,
+                        thumbnail: trackInfo.thumbnail
+                    });
+                }
 
                 (async () => {
                     try {
