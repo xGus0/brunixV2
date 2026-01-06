@@ -380,6 +380,20 @@ export default {
             length: metadata.duration || track.info.duration
         };
 
+        // Add to user's history (only manually searched tracks)
+        try {
+            const HistoryRepository = (await import('../../database/repositories/HistoryRepository.js')).default;
+            const historyRepo = new HistoryRepository(client.db);
+            await historyRepo.add(track.requester.id, {
+                title: trackInfo.title,
+                author: trackInfo.author,
+                uri: track.info.uri,
+                thumbnail: trackInfo.thumbnail
+            });
+        } catch (err) {
+            Logger.error('Failed to add to history:', err);
+        }
+
         if (!isQueued) {
             // Starting playback
             await interaction.editReply({
@@ -432,6 +446,25 @@ export default {
      * Add multiple tracks to queue
      */
     async addTracksToQueue(client, message, tracks, voiceChannel, player, displaySource, isPlaylist, playlistName) {
+        // Add to user's history (only first track to avoid spam)
+        if (tracks.length > 0) {
+            try {
+                const HistoryRepository = (await import('../../database/repositories/HistoryRepository.js')).default;
+                const historyRepo = new HistoryRepository(client.db);
+                const firstTrack = tracks[0];
+                const metadata = firstTrack.spotifyMetadata || firstTrack.info;
+
+                await historyRepo.add(message.author.id, {
+                    title: metadata.title,
+                    author: metadata.author,
+                    uri: firstTrack.info.uri,
+                    thumbnail: metadata.artworkUrl || firstTrack.info.artworkUrl
+                });
+            } catch (err) {
+                Logger.error('Failed to add to history:', err);
+            }
+        }
+
         for (const track of tracks) {
             if (!track.searchSource) track.searchSource = displaySource;
             if (!track.requester) track.requester = message.author;

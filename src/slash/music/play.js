@@ -285,6 +285,20 @@ export default {
 
                 const attachment = new AttachmentBuilder(cardBuffer, { name: 'play.png' });
 
+                // Add to user's history (only manually searched tracks)
+                try {
+                    const HistoryRepository = (await import('../../database/repositories/HistoryRepository.js')).default;
+                    const historyRepo = new HistoryRepository(interaction.client.db);
+                    await historyRepo.add(interaction.user.id, {
+                        title: metadata.title,
+                        author: metadata.author,
+                        uri: ytTrack.info.uri,
+                        thumbnail: metadata.artworkUrl
+                    });
+                } catch (err) {
+                    Logger.error('Failed to add to history:', err);
+                }
+
                 if (!player.playing && !player.paused) {
                     // ═══════════════════════════════════════════════════════════════
                     // STARTING PLAYBACK IMMEDIATELY

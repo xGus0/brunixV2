@@ -9,7 +9,6 @@ import { formatDuration, truncate } from '../../utils/formatters.js';
 import PlayCard from '../../canvas/templates/PlayCard.js';
 import UserRepository from '../../database/repositories/UserRepository.js';
 import FavoriteRepository from '../../database/repositories/FavoriteRepository.js';
-import HistoryRepository from '../../database/repositories/HistoryRepository.js';
 import ArtistRepository from '../../database/repositories/ArtistRepository.js';
 import SpotifyService from '../../services/SpotifyService.js';
 import Logger from '../../utils/logger.js';
@@ -197,26 +196,15 @@ export default {
             player.nowPlayingMessage = message;
         }
 
-        // Stats & History
+        // Stats (no history - handled in play commands)
         try {
             const userRepo = new UserRepository(client.db);
-            const historyRepo = new HistoryRepository(client.db);
             const artistRepo = new ArtistRepository(client.db);
 
             if (track.requester?.id) {
                 const userId = track.requester.id;
 
                 await userRepo.incrementStats(userId, 1, trackInfo.length);
-
-                // Only add to history if NOT autoplay (only manually searched tracks)
-                if (!track.isAutoplay) {
-                    await historyRepo.add(userId, {
-                        title: trackInfo.title,
-                        author: trackInfo.author,
-                        uri: trackInfo.uri,
-                        thumbnail: trackInfo.thumbnail
-                    });
-                }
 
                 (async () => {
                     try {
